@@ -16,4 +16,4 @@ const CONST_STRINGS = {
     PUBLIC_IDENTIFIER_MISSING: 'Falta el identificador público para buscar salas.'
 };
 
-export default CONST_STRINGS;
+export {CONST_STRINGS};

@@ -1,5 +1,5 @@
 import pushLogs from "./pushLogs";
-import CONST_STRINGS from "./const_strings";
+import {CONST_STRINGS} from "./constants";
 import { User, Room, CustomSocket, ISocket } from "./types";
 
 let listOfRooms: { [key: string]: Room } = {};
