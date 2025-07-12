@@ -1,0 +1,40 @@
+body {
+    font-family: sans-serif;
+    background: #f0f0f0;
+    color: #333;
+    text-align: center;
+}
+
+#videos {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+video {
+    background: black;
+    border: 1px solid #ccc;
+    width: 45%;
+    max-width: 640px;
+    margin: 0 10px;
+}
+
+#controls {
+    margin-top: 20px;
+}
+
+button, input {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    background: #eee;
+}
