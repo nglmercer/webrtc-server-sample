@@ -18,7 +18,7 @@ app.use(express.static('public'));
 io.on('connection', (socket) => {
     console.log(`\n[Server] New user connected with socket ID: ${socket.id}`);
 
-    signaling_server(socket as any, {});
+    signaling_server(socket, {});
 
     socket.on('disconnect', () => {
         console.log(`[Server] User with socket ID ${socket.id} has disconnected.`);

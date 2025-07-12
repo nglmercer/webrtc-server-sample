@@ -1,7 +1,7 @@
 import { ParsedUrlQuery } from 'querystring';
 
-// Interfaz base para un socket genérico
-export interface ISocket {
+// Definimos una interfaz genérica para el socket
+interface ISocket {
     id: string;
     handshake: {
         query: ParsedUrlQuery;
@@ -15,22 +15,8 @@ export interface ISocket {
     nsp?: any;
 }
 
-// Interfaz extendida para nuestro socket personalizado
-export interface CustomSocket extends ISocket {
-    userid: string;
-    admininfo?: {
-        sessionid: string;
-        session: any;
-        mediaConstraints: any;
-        sdpConstraints: any;
-        streams: any;
-        extra: any;
-    };
-    ondisconnect?: () => void;
-}
 
-// Interfaz para un usuario en la lista
-export interface User {
+interface User {
     socket: CustomSocket;
     connectedWith: { [key: string]: CustomSocket };
     extra: any;
@@ -39,8 +25,7 @@ export interface User {
     roomid?: string;
 }
 
-// Interfaz para una sala
-export interface Room {
+interface Room {
     maxParticipantsAllowed: number;
     owner: string;
     participants: string[];
@@ -56,4 +41,23 @@ export interface Room {
         scalable?: boolean;
     };
     password?: string;
+}
+
+interface CustomSocket extends ISocket {
+    userid: string;
+    admininfo?: {
+        sessionid: string;
+        session: any;
+        mediaConstraints: any;
+        sdpConstraints: any;
+        streams: any;
+        extra: any;
+    };
+    ondisconnect?: () => void;
+}
+export {
+    User,
+    Room,
+    CustomSocket,
+    ISocket,
 }
