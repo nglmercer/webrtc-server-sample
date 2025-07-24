@@ -41,16 +41,38 @@ function joinARoom(
   listOfUsers: { [key: string]: User },
   socketMessageEvent: string
 ) {
-  const room = listOfRooms[socket.admininfo!.sessionid];
+  const roomid = socket.admininfo!.sessionid;
+  const room = listOfRooms[roomid];
   if (!room) return;
   if (room.participants.length >= room.maxParticipantsAllowed) return;
 
+  const newUser = listOfUsers[socket.userid];
+  if (!newUser) return;
+
+  room.participants.forEach((pid) => {
+    if (pid === socket.userid) return; // No conectarse consigo mismo
+
+    const existingUser = listOfUsers[pid];
+    if (existingUser) {
+      // 1. Establecer la conexión bidireccional en el servidor
+      newUser.connectedWith[pid] = existingUser.socket;
+      existingUser.connectedWith[socket.userid] = newUser.socket;
+
+      // 2. Notificar a ambos usuarios que la conexión se ha establecido
+      newUser.socket.emit("user-connected", pid);
+      existingUser.socket.emit("user-connected", socket.userid);
+      
+      console.log(`[Server] Linked ${socket.userid} and ${pid} in room ${roomid}`);
+    }
+  });
+  // también se reenvíe, especialmente si se están negociando streams.
   if (room.session?.oneway || room.session?.broadcast) {
     if (listOfUsers[room.owner]) {
       message.remoteUserId = room.owner;
       listOfUsers[room.owner].socket.emit(socketMessageEvent, message);
     }
   } else {
+    // Reenviar la solicitud de participación original a los demás
     room.participants.forEach((pid) => {
       if (pid !== socket.userid && listOfUsers[pid]) {
         message.remoteUserId = pid;
