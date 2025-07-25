@@ -35,7 +35,7 @@ export default function signaling_server(socket: ISocket, config: any = {}) {
     const socketMessageEvent =
       (params.msgEvent as string) || "RTCMultiConnection-Message";
     (params as any).socketMessageEvent = socketMessageEvent;
-
+    console.log("socketMessageEvent", socketMessageEvent);
     const autoCloseEntireSession = params.autoCloseEntireSession === "true";
 
     if (!!listOfUsers[params.userid]) {
