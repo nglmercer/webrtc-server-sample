@@ -87,7 +87,7 @@ function relayMessage(socket: CustomSocket, message:any, listOfUsers: { [key: st
 
     // 1. Verificación de seguridad: ¿Existe el destinatario?
     if (!remoteUser) {
-        console.warn(`[Server] Intento de enviar mensaje a un usuario no encontrado: ${remoteUserId}`);
+        console.warn(`[Server] Intento de enviar mensaje a un usuario no encontrado: ${remoteUserId}`,remoteUser,message);
         socket.emit("user-not-found", remoteUserId); // Notificar al remitente si se desea
         return;
     }
