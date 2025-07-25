@@ -1,8 +1,13 @@
 {
   "name": "webrtc-socket-api",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "WebRTC API with Socket.IO signaling",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nglmercer/webrtc-server-sample.git"
+  },
+  "homepage": "https://github.com/nglmercer/webrtc-server-sample#readme",
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
@@ -22,7 +27,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "README.ES.md"
   ],
   "devDependencies": {
     "@types/express": "^4.17.17",
