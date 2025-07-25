@@ -1,110 +1,180 @@
-# Servidor de Señalización WebRTC
+# webrtc-socket-api
 
-Este es un servidor de señalización para aplicaciones WebRTC, construido con Node.js, Express y Socket.IO. Está diseñado para ser una implementación simple pero robusta para manejar la lógica de señalización necesaria para establecer conexiones peer-to-peer.
+> A lightweight **WebRTC signaling server** built with **Node.js, Express & Socket.IO**.  
+> Handles room management, user presence and SDP/ICE forwarding so you can focus on the front-end.
 
-## Características
+---
 
--   **Gestión de Usuarios**: Maneja la conexión y desconexión de usuarios, asignando un ID único a cada uno.
--   **Gestión de Salas (Rooms)**: Permite a los usuarios crear y unirse a salas para la comunicación.
--   **Mensajería**: Facilita el intercambio de mensajes de señalización (como ofertas/respuestas SDP y candidatos ICE) entre los clientes.
--   **Configurable**: Permite pasar un objeto de configuración para personalizar su comportamiento.
--   **Basado en Eventos**: Utiliza un sistema de manejo de eventos para las diferentes acciones (salas, usuarios, mensajes).
+## ✨ Features
 
-## Cómo Empezar
+- **User management** – auto-generated or custom `userid`.
+- **Rooms** – create/join/leave, max-participants, password protection.
+- **Public room list** – discover open rooms by identifier.
+- **Presence checks** – detect if a user or room exists.
+- **Custom events** – hook your own Socket.IO events on top.
+- **Auto-failover** – owner leaves? another participant becomes host.
+- **TypeScript** – fully typed interfaces included.
 
-### Prerrequisitos
+---
 
--   Node.js (v14 o superior)
--   npm
-
-### Instalación
-
-1.  Clona el repositorio:
-    ```bash
-    git clone <URL-DEL-REPOSITORIO>
-    cd <NOMBRE-DEL-DIRECTORIO>
-    ```
-
-2.  Instala las dependencias:
-    ```bash
-    npm install
-    ```
-    Asegúrate de tener `express`, `socket.io` y sus tipos (`@types/express`) en tu `package.json`.
-
-### Ejecutando el Servidor
-
-Para iniciar el servidor de señalización, ejecuta:
+## 📦 Installation
 
 ```bash
-npm start
+npm install webrtc-socket-api
 ```
 
-O si no tienes un script `start` configurado en tu `package.json`:
+### Peer dependencies (install once in your project):
 
 ```bash
-node dist/server.js
+npm i express socket.io
+# If you compile TS:
+npm i -D @types/express @types/node
 ```
-(Asumiendo que compilas tus archivos TypeScript a una carpeta `dist`)
 
-El servidor se iniciará por defecto en el puerto `9001`.
+---
 
-## Uso en el Cliente
+## 🚀 Quick Start (Server)
 
-Para conectar un cliente a este servidor de señalización, puedes usar `socket.io-client`.
+```ts
+// server.ts
+import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
+import signaling_server from "webrtc-socket-api";
 
-```javascript
+const app = express();
+const http = createServer(app);
+const io = new Server(http, {
+  cors: { origin: "*" },
+});
+
+io.on("connection", (socket) => {
+  signaling_server(socket, {
+    // optional global config
+    logToFile: true,
+  });
+});
+
+http.listen(9001, () => console.log("Signaling server on :9001"));
+```
+
+---
+
+## 🧑‍💻 Client Usage
+
+```bash
+npm i socket.io-client
+```
+
+```ts
+import { io } from "socket.io-client";
+
 const socket = io("http://localhost:9001", {
   query: {
-    userid: "mi-id-de-usuario", // Opcional, el servidor generará uno si no se provee
-    sessionid: "mi-id-de-sesion", // Opcional
-    // ... otros parámetros que necesites
+    userid: "alice",              // optional
+    sessionid: "room-123",        // optional
+    maxParticipantsAllowed: "10", // optional
+    extra: JSON.stringify({ avatar: "👩‍💻" }),
   },
 });
 
-socket.on("connect", () => {
-  console.log("Conectado al servidor de señalización!");
+// 1. Create / join a room
+socket.emit("open-room", {
+  sessionid: "room-123",
+  session: { audio: true, video: true },
+  identifier: "public-chat", // optional: for public listing
+  password: "secret",        // optional
 });
 
-// Escucha para eventos personalizados
-socket.on("RTCMultiConnection-Message", (data) => {
-  // Maneja los mensajes de señalización
-  console.log("Mensaje recibido:", data);
+// 2. Listen for incoming WebRTC signaling
+socket.on("RTCMultiConnection-Message", (payload) => {
+  // payload = { remoteUserId, message: { sdp, ice }, ... }
+  handleSignaling(payload); // your WebRTC logic
 });
 
-// Ejemplo de cómo enviar un mensaje
-function sendMessage(data) {
-  socket.emit("RTCMultiConnection-Message", data);
+// 3. Send signaling to another peer
+socket.emit("RTCMultiConnection-Message", {
+  remoteUserId: "bob",
+  message: { sdp: offer },
+});
+
+// 4. Extra data (avatar, nick, …)
+socket.emit("extra-data-updated", { avatar: "🎅" });
+
+// 5. Discover public rooms
+socket.emit("get-public-rooms", "public-chat", (rooms) => {
+  console.log("Available rooms:", rooms);
+});
+```
+
+---
+
+## 📡 Events Reference (Client ⇄ Server)
+
+| Event | Direction | Payload | Description |
+|-------|-----------|---------|-------------|
+| `open-room` | ⬆️ | `{ sessionid, session, extra?, password?, identifier? }` | Create & enter a room. |
+| `join-room` | ⬆️ | `{ sessionid, extra?, password? }` | Join existing room. |
+| `check-presence` | ⬆️ | `roomid` | Ask if a room exists. |
+| `get-public-rooms` | ⬆️ | `identifier` | List all open rooms with that identifier. |
+| `set-password` | ⬆️ | `password` | Owner sets/changes room password. |
+| `is-valid-password` | ⬆️ | `password, roomid` | Validate before joining. |
+| `close-entire-session` | ⬆️ | — | Owner closes the room. |
+| `extra-data-updated` | ⬆️ | `extra` | Update your own metadata. |
+| `get-remote-user-extra-data` | ⬆️ | `remoteUserId` | Fetch another user’s metadata. |
+| `changed-uuid` | ⬆️ | `newUserId` | Change your userid on the fly. |
+| `disconnect-with` | ⬆️ | `remoteUserId` | Stop peering with a specific user. |
+| `RTCMultiConnection-Message` | ⬆️⬇️ | `{ remoteUserId, message }` | SDP / ICE / custom signaling. |
+| `set-custom-socket-event-listener` | ⬆️ | `eventName` | Register an additional event to broadcast. |
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+ ├── server.ts                // Express + Socket.IO bootstrap
+ ├── signaling_server.ts      // Main export
+ ├── types.ts                 // Room, User, CustomSocket …
+ ├── constants.ts             // Error strings
+ ├── event-handlers/
+ │   ├── roomHandlers.ts      // open-room, join-room …
+ │   ├── userHandlers.ts      // extra-data-updated, uuid change …
+ │   └── messageHandlers.ts   // SDP/ICE relaying
+ └── utils/
+     ├── roomUtils.ts
+     ├── userUtils.ts
+     └── socketUtils.ts
+```
+
+---
+
+## ⚙️ Configuration
+
+Pass an optional config object as the **second argument** to `signaling_server(socket, config)`:
+
+```ts
+interface Config {
+  logToFile?: boolean;   // default false
+  logPath?: string;      // default "./logs"
 }
 ```
 
-## Estructura del Proyecto
+---
 
-El proyecto está estructurado de la siguiente manera:
+## 🛠️ Development
 
-```
-├── public/         # Archivos estáticos para el cliente (HTML, JS, CSS)
-├── src/            # Código fuente del servidor en TypeScript
-│   ├── event-handlers/ # Manejadores para eventos de socket.io
-│   ├── utils/          # Funciones de utilidad
-│   ├── constants.ts
-│   ├── server.ts       # Punto de entrada del servidor Express
-│   ├── signaling_server.ts # Lógica principal del servidor de señalización
-│   └── types.ts        # Definiciones de tipos de TypeScript
-├── package.json
-└── tsconfig.json
+```bash
+git clone <repo>
+cd webrtc-socket-api
+npm install
+npm run dev      # ts-node + nodemon
 ```
 
-## Lógica del Servidor de Señalización (`signaling_server.ts`)
+---
 
-El archivo `signaling_server.ts` exporta una función que inicializa toda la lógica de señalización para un nuevo socket que se conecta.
+## 📄 License
 
--   **`onConnection(socket)`**: Esta función se ejecuta para cada nueva conexión.
-    -   Procesa los parámetros de la query de la conexión (`userid`, `sessionid`, etc.).
-    -   Verifica si un `userid` ya está en uso.
-    -   Registra los manejadores de eventos para:
-        -   **Salas (`roomHandlers`)**: Crear, unirse, salir de salas.
-        -   **Usuarios (`userHandlers`)**: Manejo de información de usuarios.
-        -   **Mensajes (`messageHandlers`)**: Intercambio de datos de señalización.
-    -   Configura el manejador para el evento `disconnect`.
+MIT – feel free to use in open-source or commercial projects.
 
-Este servidor está diseñado para ser modular, permitiendo añadir o modificar funcionalidades fácilmente a través de sus manejadores de eventos.
+---
