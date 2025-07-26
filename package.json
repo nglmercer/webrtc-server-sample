@@ -24,6 +24,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
+    "nanoid": "^5.1.5",
     "socket.io": "^4.7.2",
     "webrtc-socket-api": "^1.0.2"
   },

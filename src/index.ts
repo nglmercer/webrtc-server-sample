@@ -1,4 +1,6 @@
 import signaling_server from './signaling_server';
+import defaultSignal, { SignalingServer } from './signal_server';
+import { WebSocketAdapter } from './WebSocketAdapter';
 import {
     User,
     Room,
@@ -7,6 +9,9 @@ import {
 } from './types';
 export {
     signaling_server,
+    SignalingServer,
+    defaultSignal,
+    WebSocketAdapter
 }
 export {
     User,

@@ -2,7 +2,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { signaling_server } from 'webrtc-socket-api';
+import { defaultSignal,WebSocketAdapter } from './index';
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
@@ -17,8 +17,11 @@ const PORT = process.env.PORT || 9001
 io.on('connection', (socket) => {
     console.log(`\n[Server] New user connected with socket ID: ${socket.id}`);
 
-    signaling_server(socket, {});
-
+    defaultSignal.handleConnection(socket);
+    setInterval(() => {
+        console.log('alldata', defaultSignal.getRooms());
+        console.log('alldata', defaultSignal.getUsers());
+    },10000)
     socket.on('disconnect', () => {
         console.log(`[Server] User with socket ID ${socket.id} has disconnected.`);
     });

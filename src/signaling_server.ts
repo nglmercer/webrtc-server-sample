@@ -6,21 +6,22 @@ import { handleDisconnect } from "./utils/socketUtils";
 import { registerRoomHandlers } from "./event-handlers/roomHandlers";
 import { registerUserHandlers } from "./event-handlers/userHandlers";
 import { registerMessageHandlers } from "./event-handlers/messageHandlers";
-
+import { WebSocketAdapter } from "./WebSocketAdapter";
+import { nanoid } from 'nanoid';
 let listOfRooms: { [key: string]: Room } = {};
 let listOfUsers: { [key: string]: User } = {};
 
-export default function signaling_server(socket: ISocket, config: any = {}) {
+export default function signaling_server(socket: ISocket | WebSocketAdapter, config: any = {}): ISocket {
   const customSocket = socket as CustomSocket;
 
   function onConnection(socket: CustomSocket) {
     let params = socket.handshake.query as any;
 
     if (!params.userid) {
-      params.userid = (Math.random() * 100).toString().replace(".", "");
+      params.userid = nanoid();
     }
     if (!params.sessionid) {
-      params.sessionid = (Math.random() * 100).toString().replace(".", "");
+      params.sessionid = nanoid();
     }
     if (params.extra) {
       try {
@@ -40,7 +41,7 @@ export default function signaling_server(socket: ISocket, config: any = {}) {
 
     if (!!listOfUsers[params.userid]) {
       const useridAlreadyTaken = params.userid;
-      params.userid = (Math.random() * 1000).toString().replace(".", "");
+      params.userid = nanoid;
       socket.emit("userid-already-taken", useridAlreadyTaken, params.userid);
       return;
     }
@@ -67,4 +68,5 @@ export default function signaling_server(socket: ISocket, config: any = {}) {
   }
 
   onConnection(customSocket);
+  return socket;
 }
