@@ -3,10 +3,10 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer } from '../src/signal_server';
-import { BunWebSocketAdapter } from '../src/adapters/BunWebSocketAdapter';
-import { logger } from '../src/logger';
-import { getHeartbeatConfig } from '../src/heartbeat';
+import { SignalingServer,logger,getHeartbeatConfig,BunWebSocketAdapter } from '../src/index';
+//import { BunWebSocketAdapter } from '../src/adapters/BunWebSocketAdapter';
+//import { logger } from '../src/logger';
+//import { getHeartbeatConfig } from '../src/heartbeat';
 
 // Configuración del servidor
 const defaultConfig = {
