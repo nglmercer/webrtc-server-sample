@@ -18,7 +18,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "server:socketio": "cross-env ENABLE_WEBSOCKET=false ts-node src/server.ts",
     "server:websocket": "cross-env ENABLE_SOCKETIO=false ts-node src/server.ts",
-    "server:full": "ts-node src/server.ts"
+    "server:full": "ts-node src/server.ts",
+    "bun:server": "bun examples/server-bun.js",
+    "bun:dev": "bun --watch examples/server-bun.js",
+    "bun:build": "bun build examples/server-bun.js --outdir dist --target bun"
   },
   "keywords": [
     "webrtc",

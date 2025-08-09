@@ -1,171 +1,269 @@
-[8/8/2025, 19:03:03] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:03:04] INFO [SignalingServer instance created] 
-[8/8/2025, 19:03:13] DEBUG [Heartbeat configurado para socket 3D5_qN3HH0Ohv3I5AAAB] 
-[8/8/2025, 19:03:13] INFO [User connected: user] 
-[8/8/2025, 19:03:24] DEBUG [Heartbeat configurado para socket iSmF2E7sWSAcw4iUAAAD] 
-[8/8/2025, 19:03:24] INFO [User connected: user12313] 
-[8/8/2025, 19:03:55] DEBUG [Ping timeout para socket 3D5_qN3HH0Ohv3I5AAAB, intentos fallidos: 1] 
-[8/8/2025, 19:04:05] DEBUG [Ping timeout para socket iSmF2E7sWSAcw4iUAAAD, intentos fallidos: 1] 
-[8/8/2025, 19:04:15] DEBUG [Ping timeout para socket 3D5_qN3HH0Ohv3I5AAAB, intentos fallidos: 2] 
-[8/8/2025, 19:04:25] DEBUG [Ping timeout para socket iSmF2E7sWSAcw4iUAAAD, intentos fallidos: 2] 
-[8/8/2025, 19:04:33] DEBUG [Ping timeout para socket 3D5_qN3HH0Ohv3I5AAAB, intentos fallidos: 3] 
-[8/8/2025, 19:04:33] WARN [Conexión perdida detectada para socket 3D5_qN3HH0Ohv3I5AAAB] 
-[8/8/2025, 19:04:33] INFO [Iniciando proceso de desconexión para socket 3D5_qN3HH0Ohv3I5AAAB] 
-[8/8/2025, 19:04:33] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:04:33] INFO [Proceso de desconexión completado para socket 3D5_qN3HH0Ohv3I5AAAB] 
-[8/8/2025, 19:04:44] DEBUG [Ping timeout para socket iSmF2E7sWSAcw4iUAAAD, intentos fallidos: 3] 
-[8/8/2025, 19:04:44] WARN [Conexión perdida detectada para socket iSmF2E7sWSAcw4iUAAAD] 
-[8/8/2025, 19:04:44] INFO [Iniciando proceso de desconexión para socket iSmF2E7sWSAcw4iUAAAD] 
-[8/8/2025, 19:04:44] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:04:44] INFO [Proceso de desconexión completado para socket iSmF2E7sWSAcw4iUAAAD] 
-[8/8/2025, 19:06:49] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:06:49] INFO [SignalingServer instance created] 
-[8/8/2025, 19:06:51] DEBUG [Heartbeat configurado para socket a6TObIb5fzADX_44AAAB] 
-[8/8/2025, 19:06:51] INFO [User connected: user] 
-[8/8/2025, 19:06:52] DEBUG [Heartbeat configurado para socket t86MQeEllxERkrYYAAAD] 
-[8/8/2025, 19:06:52] INFO [User connected: user12313] 
-[8/8/2025, 19:07:32] DEBUG [Ping timeout para socket a6TObIb5fzADX_44AAAB, intentos fallidos: 1] 
-[8/8/2025, 19:07:37] DEBUG [Ping timeout para socket t86MQeEllxERkrYYAAAD, intentos fallidos: 1] 
-[8/8/2025, 19:07:52] DEBUG [Ping timeout para socket a6TObIb5fzADX_44AAAB, intentos fallidos: 2] 
-[8/8/2025, 19:07:57] DEBUG [Ping timeout para socket t86MQeEllxERkrYYAAAD, intentos fallidos: 2] 
-[8/8/2025, 19:08:07] DEBUG [Ping timeout para socket a6TObIb5fzADX_44AAAB, intentos fallidos: 3] 
-[8/8/2025, 19:08:07] WARN [Conexión perdida detectada para socket a6TObIb5fzADX_44AAAB] 
-[8/8/2025, 19:08:07] INFO [Iniciando proceso de desconexión para socket a6TObIb5fzADX_44AAAB] 
-[8/8/2025, 19:08:07] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:08:07] INFO [Proceso de desconexión completado para socket a6TObIb5fzADX_44AAAB] 
-[8/8/2025, 19:08:12] DEBUG [Ping timeout para socket t86MQeEllxERkrYYAAAD, intentos fallidos: 3] 
-[8/8/2025, 19:08:12] WARN [Conexión perdida detectada para socket t86MQeEllxERkrYYAAAD] 
-[8/8/2025, 19:08:12] INFO [Iniciando proceso de desconexión para socket t86MQeEllxERkrYYAAAD] 
-[8/8/2025, 19:08:12] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:08:12] INFO [Proceso de desconexión completado para socket t86MQeEllxERkrYYAAAD] 
-[8/8/2025, 19:08:17] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:08:17] INFO [SignalingServer instance created] 
-[8/8/2025, 19:08:20] DEBUG [Heartbeat configurado para socket zEOioq4jUKi6SNa6AAAB] 
-[8/8/2025, 19:08:20] INFO [User connected: user] 
-[8/8/2025, 19:08:21] DEBUG [Heartbeat configurado para socket i5iiunQY_2JDTB88AAAD] 
-[8/8/2025, 19:08:21] INFO [User connected: user12313] 
-[8/8/2025, 19:09:00] DEBUG [Ping timeout para socket zEOioq4jUKi6SNa6AAAB, intentos fallidos: 1] 
-[8/8/2025, 19:09:05] DEBUG [Ping timeout para socket i5iiunQY_2JDTB88AAAD, intentos fallidos: 1] 
-[8/8/2025, 19:09:20] DEBUG [Ping timeout para socket zEOioq4jUKi6SNa6AAAB, intentos fallidos: 2] 
-[8/8/2025, 19:09:20] DEBUG [Ping timeout para socket i5iiunQY_2JDTB88AAAD, intentos fallidos: 2] 
-[8/8/2025, 19:09:35] DEBUG [Ping timeout para socket zEOioq4jUKi6SNa6AAAB, intentos fallidos: 3] 
-[8/8/2025, 19:09:35] WARN [Conexión perdida detectada para socket zEOioq4jUKi6SNa6AAAB] 
-[8/8/2025, 19:09:35] INFO [Iniciando proceso de desconexión para socket zEOioq4jUKi6SNa6AAAB] 
-[8/8/2025, 19:09:35] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:09:35] INFO [Proceso de desconexión completado para socket zEOioq4jUKi6SNa6AAAB] 
-[8/8/2025, 19:09:40] DEBUG [Ping timeout para socket i5iiunQY_2JDTB88AAAD, intentos fallidos: 3] 
-[8/8/2025, 19:09:40] WARN [Conexión perdida detectada para socket i5iiunQY_2JDTB88AAAD] 
-[8/8/2025, 19:09:40] INFO [Iniciando proceso de desconexión para socket i5iiunQY_2JDTB88AAAD] 
-[8/8/2025, 19:09:40] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:09:40] INFO [Proceso de desconexión completado para socket i5iiunQY_2JDTB88AAAD] 
-[8/8/2025, 19:10:52] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:10:52] INFO [SignalingServer instance created] 
-[8/8/2025, 19:10:53] DEBUG [Heartbeat configurado para socket lLHppTs9q0JMDt82AAAB] 
-[8/8/2025, 19:10:53] INFO [User connected: user12313] 
-[8/8/2025, 19:10:54] DEBUG [Heartbeat configurado para socket Iq4Hlkrl3Hp1nURkAAAD] 
-[8/8/2025, 19:10:54] INFO [User connected: user] 
-[8/8/2025, 19:11:33] DEBUG [Ping timeout para socket lLHppTs9q0JMDt82AAAB, intentos fallidos: 1] 
-[8/8/2025, 19:11:38] DEBUG [Ping timeout para socket Iq4Hlkrl3Hp1nURkAAAD, intentos fallidos: 1] 
-[8/8/2025, 19:11:53] DEBUG [Ping timeout para socket lLHppTs9q0JMDt82AAAB, intentos fallidos: 2] 
-[8/8/2025, 19:11:53] DEBUG [Ping timeout para socket Iq4Hlkrl3Hp1nURkAAAD, intentos fallidos: 2] 
-[8/8/2025, 19:12:11] DEBUG [Ping timeout para socket lLHppTs9q0JMDt82AAAB, intentos fallidos: 3] 
-[8/8/2025, 19:12:11] WARN [Conexión perdida detectada para socket lLHppTs9q0JMDt82AAAB] 
-[8/8/2025, 19:12:11] INFO [Iniciando proceso de desconexión para socket lLHppTs9q0JMDt82AAAB] 
-[8/8/2025, 19:12:11] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:12:11] INFO [Proceso de desconexión completado para socket lLHppTs9q0JMDt82AAAB] 
-[8/8/2025, 19:12:15] DEBUG [Ping timeout para socket Iq4Hlkrl3Hp1nURkAAAD, intentos fallidos: 3] 
-[8/8/2025, 19:12:15] WARN [Conexión perdida detectada para socket Iq4Hlkrl3Hp1nURkAAAD] 
-[8/8/2025, 19:12:15] INFO [Iniciando proceso de desconexión para socket Iq4Hlkrl3Hp1nURkAAAD] 
-[8/8/2025, 19:12:15] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:12:15] INFO [Proceso de desconexión completado para socket Iq4Hlkrl3Hp1nURkAAAD] 
-[8/8/2025, 19:16:58] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:16:58] INFO [SignalingServer instance created]  | Data: true
-[8/8/2025, 19:17:04] DEBUG [Heartbeat configurado para socket 72XaYcVDbSv2m4IXAAAB] 
-[8/8/2025, 19:17:04] INFO [User connected: user12313] 
-[8/8/2025, 19:17:04] DEBUG [Heartbeat configurado para socket rBvAPt1d5CokgPaWAAAD] 
-[8/8/2025, 19:17:04] INFO [User connected: user] 
-[8/8/2025, 19:17:44] DEBUG [Ping timeout para socket 72XaYcVDbSv2m4IXAAAB, intentos fallidos: 1] 
-[8/8/2025, 19:17:48] DEBUG [Ping timeout para socket rBvAPt1d5CokgPaWAAAD, intentos fallidos: 1] 
-[8/8/2025, 19:20:34] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:20:34] INFO [SignalingServer instance created]  | Data: true
-[8/8/2025, 19:20:39] DEBUG [Heartbeat configurado para socket xszD3zyNEyKWnAE1AAAB] 
-[8/8/2025, 19:20:39] INFO [User connected: user] 
-[8/8/2025, 19:20:39] DEBUG [Heartbeat configurado para socket nIapHUboijZ-HVqnAAAD] 
-[8/8/2025, 19:20:39] INFO [User connected: user12313] 
-[8/8/2025, 19:20:42] INFO [Iniciando proceso de desconexión para socket xszD3zyNEyKWnAE1AAAB]  | Data: "user"
-[8/8/2025, 19:20:42] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:20:42] INFO [Proceso de desconexión completado para socket xszD3zyNEyKWnAE1AAAB] 
-[8/8/2025, 19:20:42] DEBUG [Heartbeat configurado para socket 4f3OCOQeBnrD7yg2AAAF] 
-[8/8/2025, 19:20:42] INFO [User connected: user] 
-[8/8/2025, 19:21:08] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:21:08] INFO [SignalingServer instance created]  | Data: true
-[8/8/2025, 19:21:08] DEBUG [Heartbeat configurado para socket RHD147Ri5q7tqAeXAAAB] 
-[8/8/2025, 19:21:08] INFO [User connected: user12313] 
-[8/8/2025, 19:21:09] INFO [Iniciando proceso de desconexión para socket RHD147Ri5q7tqAeXAAAB]  | Data: "user12313"
-[8/8/2025, 19:21:09] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:21:09] INFO [Proceso de desconexión completado para socket RHD147Ri5q7tqAeXAAAB] 
-[8/8/2025, 19:21:09] DEBUG [Heartbeat configurado para socket Yf6HptAVZUEWKYKxAAAD] 
-[8/8/2025, 19:21:09] INFO [User connected: user] 
-[8/8/2025, 19:21:09] DEBUG [Heartbeat configurado para socket DDTlUhS-A_9m3lhDAAAF] 
-[8/8/2025, 19:21:09] INFO [User connected: user12313] 
-[8/8/2025, 19:21:13] INFO [Iniciando proceso de desconexión para socket Yf6HptAVZUEWKYKxAAAD]  | Data: "user"
-[8/8/2025, 19:21:13] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:21:13] INFO [Proceso de desconexión completado para socket Yf6HptAVZUEWKYKxAAAD] 
-[8/8/2025, 19:21:13] DEBUG [Heartbeat configurado para socket UkYTeKmACcc-Pr7RAAAH] 
-[8/8/2025, 19:21:13] INFO [User connected: user] 
-[8/8/2025, 19:22:09] DEBUG [Ping timeout para socket DDTlUhS-A_9m3lhDAAAF, intentos fallidos: 1] 
-[8/8/2025, 19:22:14] DEBUG [Ping timeout para socket UkYTeKmACcc-Pr7RAAAH, intentos fallidos: 1] 
-[8/8/2025, 19:22:40] DEBUG [Ping timeout para socket DDTlUhS-A_9m3lhDAAAF, intentos fallidos: 2] 
-[8/8/2025, 19:22:44] DEBUG [Ping timeout para socket UkYTeKmACcc-Pr7RAAAH, intentos fallidos: 2] 
-[8/8/2025, 19:23:11] DEBUG [Ping timeout para socket DDTlUhS-A_9m3lhDAAAF, intentos fallidos: 3] 
-[8/8/2025, 19:23:11] WARN [Conexión perdida detectada para socket DDTlUhS-A_9m3lhDAAAF] 
-[8/8/2025, 19:23:11] INFO [Iniciando proceso de desconexión para socket DDTlUhS-A_9m3lhDAAAF]  | Data: "user12313"
-[8/8/2025, 19:23:11] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:23:11] INFO [Proceso de desconexión completado para socket DDTlUhS-A_9m3lhDAAAF] 
-[8/8/2025, 19:23:11] DEBUG [Ping timeout para socket UkYTeKmACcc-Pr7RAAAH, intentos fallidos: 3] 
-[8/8/2025, 19:23:11] WARN [Conexión perdida detectada para socket UkYTeKmACcc-Pr7RAAAH] 
-[8/8/2025, 19:23:11] INFO [Iniciando proceso de desconexión para socket UkYTeKmACcc-Pr7RAAAH]  | Data: "user"
-[8/8/2025, 19:23:11] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:23:11] INFO [Proceso de desconexión completado para socket UkYTeKmACcc-Pr7RAAAH] 
-[8/8/2025, 19:38:36] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:38:36] INFO [SignalingServer instance created]  | Data: true
-[8/8/2025, 19:39:36] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:39:36] INFO [SignalingServer instance created]  | Data: true
-[8/8/2025, 19:40:15] DEBUG [Heartbeat configurado para socket j3i1UeGVwgkuzpxZAAAB] 
-[8/8/2025, 19:40:15] INFO [User connected: user] 
-[8/8/2025, 19:40:16] DEBUG [Heartbeat configurado para socket RxtGXrXC_Ru0uJbXAAAD] 
-[8/8/2025, 19:40:16] INFO [User connected: user12313] 
-[8/8/2025, 19:40:55] DEBUG [Ping timeout para socket j3i1UeGVwgkuzpxZAAAB, intentos fallidos: 1] 
-[8/8/2025, 19:40:56] DEBUG [Ping timeout para socket RxtGXrXC_Ru0uJbXAAAD, intentos fallidos: 1] 
-[8/8/2025, 19:41:10] DEBUG [Ping timeout para socket j3i1UeGVwgkuzpxZAAAB, intentos fallidos: 2] 
-[8/8/2025, 19:41:11] DEBUG [Ping timeout para socket RxtGXrXC_Ru0uJbXAAAD, intentos fallidos: 2] 
-[8/8/2025, 19:41:25] DEBUG [Ping timeout para socket j3i1UeGVwgkuzpxZAAAB, intentos fallidos: 3] 
-[8/8/2025, 19:41:25] WARN [Conexión perdida detectada para socket j3i1UeGVwgkuzpxZAAAB] 
-[8/8/2025, 19:41:25] INFO [Iniciando proceso de desconexión para socket j3i1UeGVwgkuzpxZAAAB]  | Data: "user"
-[8/8/2025, 19:41:25] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:41:25] INFO [Proceso de desconexión completado para socket j3i1UeGVwgkuzpxZAAAB] 
-[8/8/2025, 19:41:26] DEBUG [Ping timeout para socket RxtGXrXC_Ru0uJbXAAAD, intentos fallidos: 3] 
-[8/8/2025, 19:41:26] WARN [Conexión perdida detectada para socket RxtGXrXC_Ru0uJbXAAAD] 
-[8/8/2025, 19:41:26] INFO [Iniciando proceso de desconexión para socket RxtGXrXC_Ru0uJbXAAAD]  | Data: "user12313"
-[8/8/2025, 19:41:26] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:41:26] INFO [Proceso de desconexión completado para socket RxtGXrXC_Ru0uJbXAAAD] 
-[8/8/2025, 19:41:46] INFO [HeartbeatManager configurado y iniciado] 
-[8/8/2025, 19:41:46] INFO [SignalingServer instance created]  | Data: true
-[8/8/2025, 19:41:54] DEBUG [Heartbeat configurado para socket tPvuxRwbqKKDM9rdAAAB] 
-[8/8/2025, 19:41:54] INFO [User connected: user12313] 
-[8/8/2025, 19:41:57] DEBUG [Heartbeat configurado para socket u2l566NHkoCVEDxkAAAD] 
-[8/8/2025, 19:41:57] INFO [User connected: user] 
-[8/8/2025, 19:42:34] DEBUG [Ping timeout para socket tPvuxRwbqKKDM9rdAAAB, intentos fallidos: 1] 
-[8/8/2025, 19:42:37] DEBUG [Ping timeout para socket u2l566NHkoCVEDxkAAAD, intentos fallidos: 1] 
-[8/8/2025, 19:42:49] DEBUG [Ping timeout para socket tPvuxRwbqKKDM9rdAAAB, intentos fallidos: 2] 
-[8/8/2025, 19:42:52] DEBUG [Ping timeout para socket u2l566NHkoCVEDxkAAAD, intentos fallidos: 2] 
-[8/8/2025, 19:43:04] DEBUG [Ping timeout para socket tPvuxRwbqKKDM9rdAAAB, intentos fallidos: 3] 
-[8/8/2025, 19:43:04] WARN [Conexión perdida detectada para socket tPvuxRwbqKKDM9rdAAAB] 
-[8/8/2025, 19:43:04] INFO [Iniciando proceso de desconexión para socket tPvuxRwbqKKDM9rdAAAB]  | Data: "user12313"
-[8/8/2025, 19:43:04] DEBUG [Notificando desconexión a 1 usuarios conectados] 
-[8/8/2025, 19:43:04] INFO [Proceso de desconexión completado para socket tPvuxRwbqKKDM9rdAAAB] 
-[8/8/2025, 19:43:07] DEBUG [Ping timeout para socket u2l566NHkoCVEDxkAAAD, intentos fallidos: 3] 
-[8/8/2025, 19:43:07] WARN [Conexión perdida detectada para socket u2l566NHkoCVEDxkAAAD] 
-[8/8/2025, 19:43:07] INFO [Iniciando proceso de desconexión para socket u2l566NHkoCVEDxkAAAD]  | Data: "user"
-[8/8/2025, 19:43:07] DEBUG [Notificando desconexión a 0 usuarios conectados] 
-[8/8/2025, 19:43:07] INFO [Proceso de desconexión completado para socket u2l566NHkoCVEDxkAAAD] 
+[8/8/2025, 19:54:54] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:54:54] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:54:54] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 19:54:54] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:54:54] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:54:54] INFO [WebRTCServer inicializado] 
+[8/8/2025, 19:54:54] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 19:56:22] INFO [Señal SIGINT recibida, cerrando servidor...] 
+[8/8/2025, 19:56:22] INFO [Cerrando servidor WebRTC...] 
+[8/8/2025, 19:56:22] INFO [HeartbeatManager detenido] 
+[8/8/2025, 19:56:22] INFO [Servidor WebRTC cerrado correctamente] 
+[8/8/2025, 19:56:23] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:56:23] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:56:23] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 19:56:23] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:56:23] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:56:23] INFO [WebRTCServer inicializado] 
+[8/8/2025, 19:56:23] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 19:57:05] INFO [Señal SIGINT recibida, cerrando servidor...] 
+[8/8/2025, 19:57:05] INFO [Cerrando servidor WebRTC...] 
+[8/8/2025, 19:57:05] INFO [HeartbeatManager detenido] 
+[8/8/2025, 19:57:05] INFO [Servidor WebRTC cerrado correctamente] 
+[8/8/2025, 19:57:06] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:57:06] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:57:06] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 19:57:06] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:57:06] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:57:06] INFO [WebRTCServer inicializado] 
+[8/8/2025, 19:57:06] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 19:57:30] INFO [Señal SIGINT recibida, cerrando servidor...] 
+[8/8/2025, 19:57:30] INFO [Cerrando servidor WebRTC...] 
+[8/8/2025, 19:57:30] INFO [HeartbeatManager detenido] 
+[8/8/2025, 19:57:30] INFO [Servidor WebRTC cerrado correctamente] 
+[8/8/2025, 19:57:32] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:57:32] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:57:32] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 19:57:32] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:57:32] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:57:32] INFO [WebRTCServer inicializado] 
+[8/8/2025, 19:57:32] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 19:58:52] INFO [Señal SIGINT recibida, cerrando servidor...] 
+[8/8/2025, 19:58:52] INFO [Cerrando servidor WebRTC...] 
+[8/8/2025, 19:58:52] INFO [HeartbeatManager detenido] 
+[8/8/2025, 19:58:52] INFO [Servidor WebRTC cerrado correctamente] 
+[8/8/2025, 19:58:54] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:58:54] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:58:54] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 19:58:54] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:58:54] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:58:54] INFO [WebRTCServer inicializado] 
+[8/8/2025, 19:58:54] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:00:22] INFO [Señal SIGINT recibida, cerrando servidor...] 
+[8/8/2025, 20:00:22] INFO [Cerrando servidor WebRTC...] 
+[8/8/2025, 20:00:22] INFO [HeartbeatManager detenido] 
+[8/8/2025, 20:00:22] INFO [Servidor WebRTC cerrado correctamente] 
+[8/8/2025, 20:00:23] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:00:23] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:00:23] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:00:23] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:00:23] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:00:23] INFO [WebRTCServer inicializado] 
+[8/8/2025, 20:00:23] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:01:06] INFO [Señal SIGINT recibida, cerrando servidor...] 
+[8/8/2025, 20:01:06] INFO [Cerrando servidor WebRTC...] 
+[8/8/2025, 20:01:06] INFO [HeartbeatManager detenido] 
+[8/8/2025, 20:01:06] INFO [Servidor WebRTC cerrado correctamente] 
+[8/8/2025, 20:01:07] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:01:07] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:01:07] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:01:07] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:01:07] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:01:07] INFO [WebRTCServer inicializado] 
+[8/8/2025, 20:01:07] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:01:08] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:01:08] DEBUG [Heartbeat configurado para socket WgxCefAjvLJ8STgaAAAB] 
+[8/8/2025, 20:01:08] INFO [User connected: user12313] 
+[8/8/2025, 20:02:02] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:02:02] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:02:02] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:02:02] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:02:02] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:02:02] INFO [WebRTCServer inicializado] 
+[8/8/2025, 20:02:02] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:02:02] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:02:02] DEBUG [Heartbeat configurado para socket ni1KuoUFyANQe653AAAB] 
+[8/8/2025, 20:02:02] INFO [User connected: user12313] 
+[8/8/2025, 20:02:07] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:02:07] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:02:07] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:02:07] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:02:07] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:02:07] INFO [WebRTCServer inicializado] 
+[8/8/2025, 20:02:07] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:02:07] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:02:07] DEBUG [Heartbeat configurado para socket mzevLQcYNdmP2qgfAAAB] 
+[8/8/2025, 20:02:07] INFO [User connected: user12313] 
+[8/8/2025, 20:42:24] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:42:24] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:42:24] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:42:24] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:42:24] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:42:24] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:42:27] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:42:27] DEBUG [Heartbeat configurado para socket bRNjpufbLi55jakgAAAB] 
+[8/8/2025, 20:42:27] INFO [User connected: user12313] 
+[8/8/2025, 20:43:28] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:43:28] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:43:28] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:43:28] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:43:28] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:43:28] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:43:33] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:43:33] DEBUG [Heartbeat configurado para socket 5UDmQ-5ejKXy47thAAAB] 
+[8/8/2025, 20:43:33] INFO [User connected: user12313] 
+[8/8/2025, 20:44:13] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:44:13] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:44:13] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:44:13] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:44:13] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:44:14] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:44:17] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:44:17] DEBUG [Heartbeat configurado para socket STQ97l-dKWj2GRZpAAAB] 
+[8/8/2025, 20:44:17] INFO [User connected: user12313] 
+[8/8/2025, 20:44:46] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:44:46] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:44:46] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:44:46] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:44:46] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:44:46] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:45:00] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:45:00] DEBUG [Heartbeat configurado para socket kWSlKjBfU3Tmj-jOAAAB] 
+[8/8/2025, 20:45:00] INFO [User connected: user] 
+[8/8/2025, 20:45:54] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:45:54] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:45:54] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:45:54] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:45:54] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:45:54] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:45:55] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:45:55] DEBUG [Heartbeat configurado para socket bQh5xPeSbGPs06fRAAAB] 
+[8/8/2025, 20:45:55] INFO [User connected: user] 
+[8/8/2025, 20:48:55] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:48:55] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:48:55] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:48:55] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:48:55] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:48:55] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:48:58] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:48:58] DEBUG [Heartbeat configurado para socket fXhJYrr3cX_WQeJZAAAB] 
+[8/8/2025, 20:48:58] INFO [User connected: user] 
+[8/8/2025, 20:49:29] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:49:29] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:49:29] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:49:29] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:49:29] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:49:29] INFO [Servidor WebRTC iniciado] 
+[8/8/2025, 20:49:29] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:49:29] DEBUG [Heartbeat configurado para socket Gy2tzSnj-LYb8I8sAAAB] 
+[8/8/2025, 20:49:29] INFO [User connected: user] 
+[8/8/2025, 20:49:32] INFO [Iniciando proceso de desconexión para socket Gy2tzSnj-LYb8I8sAAAB]  | Data: "user"
+[8/8/2025, 20:49:32] DEBUG [Notificando desconexión a 0 usuarios conectados] 
+[8/8/2025, 20:49:32] INFO [Proceso de desconexión completado para socket Gy2tzSnj-LYb8I8sAAAB] 
+[8/8/2025, 20:49:32] INFO [Desconexión Socket.IO] 
+[8/8/2025, 20:49:32] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:49:32] DEBUG [Heartbeat configurado para socket yYcNYsmgC_OAEylHAAAD] 
+[8/8/2025, 20:49:32] INFO [User connected: user] 
+[8/8/2025, 20:49:33] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 20:49:33] DEBUG [Heartbeat configurado para socket ncavgj75ON44b0yQAAAF] 
+[8/8/2025, 20:49:33] INFO [User connected: user12313] 
+[8/8/2025, 20:50:13] DEBUG [Ping timeout para socket yYcNYsmgC_OAEylHAAAD, intentos fallidos: 1] 
+[8/8/2025, 20:50:13] DEBUG [Ping timeout para socket yYcNYsmgC_OAEylHAAAD, intentos fallidos: 1] 
+[8/8/2025, 20:50:13] DEBUG [Ping timeout para socket ncavgj75ON44b0yQAAAF, intentos fallidos: 1] 
+[8/8/2025, 20:50:13] DEBUG [Ping timeout para socket ncavgj75ON44b0yQAAAF, intentos fallidos: 1] 
+[8/8/2025, 20:50:28] DEBUG [Ping timeout para socket yYcNYsmgC_OAEylHAAAD, intentos fallidos: 2] 
+[8/8/2025, 20:50:28] DEBUG [Ping timeout para socket yYcNYsmgC_OAEylHAAAD, intentos fallidos: 2] 
+[8/8/2025, 20:50:28] DEBUG [Ping timeout para socket ncavgj75ON44b0yQAAAF, intentos fallidos: 2] 
+[8/8/2025, 20:50:28] DEBUG [Ping timeout para socket ncavgj75ON44b0yQAAAF, intentos fallidos: 2] 
+[8/8/2025, 20:50:43] DEBUG [Ping timeout para socket yYcNYsmgC_OAEylHAAAD, intentos fallidos: 3] 
+[8/8/2025, 20:50:43] DEBUG [Ping timeout para socket yYcNYsmgC_OAEylHAAAD, intentos fallidos: 3] 
+[8/8/2025, 20:50:43] WARN [Conexión perdida detectada para socket yYcNYsmgC_OAEylHAAAD] 
+[8/8/2025, 20:50:43] WARN [Conexión perdida detectada para socket yYcNYsmgC_OAEylHAAAD] 
+[8/8/2025, 20:50:43] INFO [Iniciando proceso de desconexión para socket yYcNYsmgC_OAEylHAAAD]  | Data: "user"
+[8/8/2025, 20:50:43] DEBUG [Notificando desconexión a 1 usuarios conectados] 
+[8/8/2025, 20:50:43] INFO [Proceso de desconexión completado para socket yYcNYsmgC_OAEylHAAAD] 
+[8/8/2025, 20:50:43] INFO [Desconexión Socket.IO] 
+[8/8/2025, 20:50:43] DEBUG [Ping timeout para socket ncavgj75ON44b0yQAAAF, intentos fallidos: 3] 
+[8/8/2025, 20:50:43] DEBUG [Ping timeout para socket ncavgj75ON44b0yQAAAF, intentos fallidos: 3] 
+[8/8/2025, 20:50:43] WARN [Conexión perdida detectada para socket ncavgj75ON44b0yQAAAF] 
+[8/8/2025, 20:50:43] WARN [Conexión perdida detectada para socket ncavgj75ON44b0yQAAAF] 
+[8/8/2025, 20:50:43] INFO [Iniciando proceso de desconexión para socket ncavgj75ON44b0yQAAAF]  | Data: "user12313"
+[8/8/2025, 20:50:43] DEBUG [Notificando desconexión a 0 usuarios conectados] 
+[8/8/2025, 20:50:43] INFO [Proceso de desconexión completado para socket ncavgj75ON44b0yQAAAF] 
+[8/8/2025, 20:50:43] INFO [Desconexión Socket.IO] 
+[8/8/2025, 20:53:33] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:53:33] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:53:33] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:53:33] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:53:33] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:53:33] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 20:54:46] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:54:46] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:54:46] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:54:46] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:54:46] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:54:46] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 20:55:26] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:55:26] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:55:26] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:55:26] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:55:26] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:55:27] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 20:55:58] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:55:58] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:55:58] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:55:58] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:55:58] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:55:58] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 20:57:59] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:58:00] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:58:00] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:58:00] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:58:00] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:58:00] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 20:58:31] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:58:31] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:58:31] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:58:31] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:58:31] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:58:31] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 20:59:33] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:59:33] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:59:33] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 20:59:33] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 20:59:33] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 20:59:33] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 21:00:09] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 21:00:09] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 21:00:09] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 21:00:09] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 21:00:09] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 21:00:09] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 21:00:49] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 21:00:49] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 21:00:49] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 21:00:49] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 21:00:49] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 21:00:49] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 21:01:23] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 21:01:23] DEBUG [Heartbeat configurado para socket 6HLvK6wdtERPKgEqAAAB] 
+[8/8/2025, 21:01:23] INFO [User connected: user12313] 
+[8/8/2025, 21:01:47] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 21:01:47] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 21:01:47] WARN [HeartbeatManager ya está ejecutándose]  | Data: true
+[8/8/2025, 21:01:47] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 21:01:47] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 21:01:47] INFO [Servidor Socket.IO iniciado] 
+[8/8/2025, 21:01:49] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 21:01:49] DEBUG [Heartbeat configurado para socket n4qm1yduVx5-IBuhAAAB] 
+[8/8/2025, 21:01:49] INFO [User connected: user12313] 
+[8/8/2025, 21:01:50] INFO [Iniciando proceso de desconexión para socket n4qm1yduVx5-IBuhAAAB]  | Data: "user12313"
+[8/8/2025, 21:01:50] DEBUG [Notificando desconexión a 0 usuarios conectados] 
+[8/8/2025, 21:01:50] INFO [Proceso de desconexión completado para socket n4qm1yduVx5-IBuhAAAB] 
+[8/8/2025, 21:01:50] INFO [Desconexión Socket.IO] 
+[8/8/2025, 21:01:50] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 21:01:50] DEBUG [Heartbeat configurado para socket ZQF2X7vrhjlIo9cCAAAD] 
+[8/8/2025, 21:01:50] INFO [User connected: user12313] 
+[8/8/2025, 21:02:04] INFO [Nueva conexión Socket.IO] 
+[8/8/2025, 21:02:04] DEBUG [Heartbeat configurado para socket Vp7K72D56Zfh8P1PAAAF] 
+[8/8/2025, 21:02:04] INFO [User connected: user1] 

@@ -15,6 +15,8 @@
 - **Custom events** – hook your own Socket.IO events on top.
 - **Auto-failover** – owner leaves? another participant becomes host.
 - **TypeScript** – fully typed interfaces included.
+- **Bun compatibility** – optimized for both Node.js and Bun runtime.
+- **Dual WebSocket support** – Socket.IO and native WebSocket implementations.
 
 ---
 
@@ -31,6 +33,38 @@ npm i express socket.io
 # If you compile TS:
 npm i -D @types/express @types/node
 ```
+
+---
+
+## 🔥 Bun Runtime Support
+
+**NEW**: This package now supports Bun runtime with native WebSocket implementation for superior performance!
+
+### Why Bun?
+- **7x faster** WebSocket throughput compared to Node.js + ws
+- **Native WebSocket** implementation with built-in pub/sub
+- **Lower memory usage** and faster startup times
+
+### Quick Start with Bun
+
+```bash
+# Install Bun (if not already installed)
+curl -fsSL https://bun.sh/install | bash
+
+# Run the optimized Bun server
+npm run bun:server
+# or
+bun examples/server-bun.js
+```
+
+### Bun vs Node.js
+
+| Runtime | Command | WebSocket Library | Performance |
+|---------|---------|-------------------|-------------|
+| Node.js | `npm start` | Socket.IO + ws | Standard |
+| Bun | `npm run bun:server` | Native WebSocket | 7x faster |
+
+> **Note**: If you encounter `TypeError: undefined is not an object (evaluating 'http')` when using Bun, use the Bun-optimized server instead of the standard one. See [Bun Compatibility Guide](./docs/BUN_COMPATIBILITY.md) for details.
 
 ---
 
