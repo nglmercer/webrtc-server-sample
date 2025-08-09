@@ -20,7 +20,7 @@ const defaultConfig = {
 const heartbeatConfig = getHeartbeatConfig(process.env.NODE_ENV || 'production');
 const signalingServer = new SignalingServer({
   enableHeartbeat: true,
-  heartbeat: heartbeatConfig,
+  heartbeat: {...heartbeatConfig, pingInterval:3000000},
   maxParticipantsAllowed: defaultConfig.maxParticipants
 });
 io.on('connection', (socket) => {
