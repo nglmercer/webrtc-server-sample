@@ -2,120 +2,137 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-function publishToNpm() {
-  const originalBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
-  const tempBranch = `temp-dist-${Date.now()}`;
-  
+function run(command, options = {}) {
+  return execSync(command, { stdio: "inherit", ...options });
+}
+function runSilent(command) {
+  return execSync(command, { encoding: "utf8" }).trim();
+}
+
+function loadConfig() {
+  const defaultConfig = {
+    buildCommand: "npm run build",
+    outputDir: "dist",
+    checkVersion: true,
+    createGitTag: true,
+    tempBranchPrefix: "temp-dist",
+    dryRun: false,
+  };
+
+  const configPath = path.resolve("publish.config.json");
+  let fileConfig = {};
+  if (fs.existsSync(configPath)) {
+    fileConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  }
+
+  const args = process.argv.slice(2);
+  const cliConfig = {
+    dryRun: args.includes("--dry-run"),
+  };
+
+  return { ...defaultConfig, ...fileConfig, ...cliConfig };
+}
+
+function publishToNpm(config) {
+  const {
+    buildCommand,
+    outputDir,
+    checkVersion,
+    createGitTag,
+    tempBranchPrefix,
+    dryRun,
+  } = config;
+
+  const originalBranch = runSilent("git branch --show-current");
+  const tempBranch = `${tempBranchPrefix}-${Date.now()}`;
+
   try {
-    console.log('🔍 Verificando estado del repositorio...');
-    
-    // Verificar que no hay cambios sin commitear
+    console.log("🔍 Verificando estado del repositorio...");
+
     try {
-      execSync('git diff --exit-code', { stdio: 'pipe' });
-      execSync('git diff --cached --exit-code', { stdio: 'pipe' });
-    } catch (error) {
-      console.error('❌ Error: Hay cambios sin commitear. Por favor, haz commit de tus cambios antes de publicar.');
+      execSync("git diff --exit-code", { stdio: "pipe" });
+      execSync("git diff --cached --exit-code", { stdio: "pipe" });
+    } catch {
+      console.error("❌ Hay cambios sin commitear.");
       process.exit(1);
     }
-    
-    console.log('🔨 Compilando proyecto...');
-    execSync('npm run build', { stdio: 'inherit' });
-    
-    // Verificar que dist/ existe
-    if (!fs.existsSync('dist')) {
-      console.error('❌ Error: El directorio dist/ no existe después del build.');
+
+    if (checkVersion) {
+      const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+      const publishedVersions = runSilent(`npm view ${pkg.name} versions --json`);
+      if (publishedVersions.includes(pkg.version)) {
+        console.error(`❌ La versión ${pkg.version} ya está publicada.`);
+        process.exit(1);
+      }
+    }
+
+    console.log("🔨 Compilando proyecto...");
+    run(buildCommand);
+
+    if (!fs.existsSync(outputDir)) {
+      console.error(`❌ Error: ${outputDir}/ no existe después del build.`);
       process.exit(1);
     }
-    
+
     console.log(`🌿 Creando rama temporal: ${tempBranch}...`);
-    execSync(`git checkout -b ${tempBranch}`, { stdio: 'inherit' });
-    
-    console.log('📝 Modificando .gitignore temporalmente...');
-    // Crear backup del .gitignore
-    const gitignorePath = '.gitignore';
-    const gitignoreBackup = '.gitignore.backup';
-    
-    if (fs.existsSync(gitignorePath)) {
-      const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
-      fs.writeFileSync(gitignoreBackup, gitignoreContent);
-      
-      // Remover dist/ del .gitignore
-      const modifiedContent = gitignoreContent
-        .split('\n')
-        .filter(line => line.trim() !== 'dist/')
-        .join('\n');
-      
-      fs.writeFileSync(gitignorePath, modifiedContent);
+    run(`git checkout -b ${tempBranch}`);
+
+    console.log("📦 Preparando archivos de distribución...");
+    run("git stash push -m 'temp-dist-stash' --include-untracked");
+    run(`git checkout stash -- ${outputDir}`);
+    run(`git add ${outputDir}`);
+    run(`git commit -m "Add ${outputDir} files for npm publishing"`);
+
+    console.log(dryRun ? "🚀 Simulando publicación..." : "🚀 Publicando en NPM...");
+    run(`npm publish${dryRun ? " --dry-run" : ""}`);
+
+    if (createGitTag && !dryRun) {
+      const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+      const tagName = `v${pkg.version}`;
+      console.log(`🏷️ Creando tag ${tagName}...`);
+      run(`git tag ${tagName}`);
+      run(`git push origin ${tagName}`);
     }
-    
-    console.log('📦 Agregando archivos de distribución...');
-    execSync('git add dist/ .gitignore', { stdio: 'inherit' });
-    
-    // Verificar que hay cambios para commitear
-    try {
-      execSync('git diff --cached --exit-code', { stdio: 'pipe' });
-      console.log('ℹ️  No hay cambios en dist/ para commitear.');
-    } catch (error) {
-      // Hay cambios, proceder con el commit
-      execSync('git commit -m "Add dist files for npm publishing"', { stdio: 'inherit' });
-    }
-    
-    console.log('🚀 Publicando en NPM...');
-    execSync('npm publish', { stdio: 'inherit' });
-    
-    console.log('✅ Publicación completada exitosamente!');
-    
+
+    console.log("✅ Publicación completada!");
   } catch (error) {
-    console.error('❌ Error durante la publicación:', error.message);
+    console.error("❌ Error durante la publicación:", error.message);
     process.exit(1);
   } finally {
-    console.log('🧹 Limpiando...');
-    
+    console.log("🧹 Restaurando estado...");
     try {
-      // Volver a la rama original
-      execSync(`git checkout ${originalBranch}`, { stdio: 'inherit' });
-      
-      // Eliminar rama temporal
-      execSync(`git branch -D ${tempBranch}`, { stdio: 'inherit' });
-      
-      // Restaurar .gitignore si existe el backup
-      if (fs.existsSync('.gitignore.backup')) {
-        fs.renameSync('.gitignore.backup', '.gitignore');
-      }
-      
-      console.log('🎉 Limpieza completada.');
+      run(`git checkout ${originalBranch}`);
+      run(`git branch -D ${tempBranch}`);
+      run("git stash pop || true");
+      console.log("🎉 Limpieza completada.");
     } catch (cleanupError) {
-      console.error('⚠️  Error durante la limpieza:', cleanupError.message);
-      console.log(`Por favor, ejecuta manualmente: git checkout ${originalBranch} && git branch -D ${tempBranch}`);
+      console.error("⚠️ Error en limpieza:", cleanupError.message);
     }
   }
 }
 
-// Verificar argumentos de línea de comandos
-const args = process.argv.slice(2);
-if (args.includes('--help') || args.includes('-h')) {
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
   console.log(`
 📚 Script de Publicación NPM
 
-Uso: node scripts/publish-npm.js [opciones]
+Configura en publish.config.json o con argumentos CLI:
 
-Opciones:
-  --help, -h     Mostrar esta ayuda
-  --dry-run      Ejecutar sin publicar realmente
+Opciones en JSON:
+{
+  "buildCommand": "npm run build",
+  "outputDir": "dist",
+  "checkVersion": true,
+  "createGitTag": true,
+  "tempBranchPrefix": "temp-dist",
+  "dryRun": false
+}
 
-Este script:
-1. Compila el proyecto
-2. Crea una rama temporal
-3. Modifica .gitignore para incluir dist/
-4. Publica en NPM
-5. Limpia y vuelve a la rama original
+Argumentos CLI:
+  --dry-run   Simular publicación
+  --help      Mostrar ayuda
 `);
   process.exit(0);
 }
 
-if (args.includes('--dry-run')) {
-  console.log('🔍 Modo dry-run: no se publicará realmente en NPM');
-  // Aquí podrías modificar el script para no ejecutar npm publish
-}
-
-publishToNpm();
+const config = loadConfig();
+publishToNpm(config);
