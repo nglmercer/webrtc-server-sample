@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente de Prueba - WebSocket Nativo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input {
+            width: 200px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .log {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Cliente de Prueba WebRTC - WebSocket Nativo</h1>
+        
+        <div class="warning">
+            ⚠️ <strong>Nota:</strong> Este cliente usa WebSocket nativo. Asegúrate de que el servidor esté ejecutándose con <code>npm run start:websocket</code>
+        </div>
+        
+        <div id="status" class="status disconnected">
+            ❌ Desconectado
+        </div>
+        
+        <div class="form-group">
+            <label for="userId">ID de Usuario:</label>
+            <input type="text" id="userId" placeholder="Ingresa tu ID de usuario">
+        </div>
+        
+        <div class="form-group">
+            <label for="roomId">ID de Sala:</label>
+            <input type="text" id="roomId" placeholder="Ingresa el ID de la sala">
+        </div>
+        
+        <div class="actions">
+            <button onclick="connectToServer()">🔌 Conectar</button>
+            <button onclick="disconnectFromServer()">🔌 Desconectar</button>
+            <button onclick="openRoom()">🏠 Abrir Sala</button>
+            <button onclick="joinRoom()">🚪 Unirse a Sala</button>
+            <button onclick="leaveRoom()">🚶 Salir de Sala</button>
+            <button onclick="getPublicRooms()">📋 Listar Salas</button>
+            <button onclick="clearLog()">🗑️ Limpiar Log</button>
+        </div>
+        
+        <div class="form-group">
+            <label for="log">Log de Eventos:</label>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+    
+    <script>
+        let socket = null;
+        let isConnected = false;
+        let messageId = 0;
+        
+        function log(message) {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            isConnected = connected;
+            const statusElement = document.getElementById('status');
+            if (connected) {
+                statusElement.textContent = '✅ Conectado';
+                statusElement.className = 'status connected';
+            } else {
+                statusElement.textContent = '❌ Desconectado';
+                statusElement.className = 'status disconnected';
+            }
+        }
+        
+        function sendMessage(event, data = {}) {
+            if (!isConnected || !socket) {
+                log('No estás conectado al servidor');
+                return;
+            }
+            
+            const message = {
+                event: event,
+                data: data,
+                id: ++messageId,
+                timestamp: Date.now()
+            };
+            
+            socket.send(JSON.stringify(message));
+            log(`Enviado: ${event} - ${JSON.stringify(data)}`);
+        }
+        
+        function connectToServer() {
+            if (isConnected) {
+                log('Ya estás conectado al servidor');
+                return;
+            }
+            
+            const userId = document.getElementById('userId').value || 'user_' + Math.random().toString(36).substr(2, 9);
+            const wsUrl = `ws://localhost:3000/socket.io/?userid=${encodeURIComponent(userId)}&extra=${encodeURIComponent(JSON.stringify({ name: 'Usuario de Prueba', timestamp: Date.now() }))}`;
+            
+            log('Conectando al servidor WebSocket...');
+            log(`URL: ${wsUrl}`);
+            
+            socket = new WebSocket(wsUrl);
+            
+            socket.onopen = (event) => {
+                log('Conectado al servidor WebSocket');
+                updateStatus(true);
+                
+                // Enviar mensaje de inicialización
+                sendMessage('connection', {
+                    userid: userId,
+                    extra: { name: 'Usuario de Prueba', timestamp: Date.now() }
+                });
+            };
+            
+            socket.onclose = (event) => {
+                log(`Conexión cerrada. Código: ${event.code}, Razón: ${event.reason}`);
+                updateStatus(false);
+                socket = null;
+            };
+            
+            socket.onerror = (error) => {
+                log(`Error de WebSocket: ${error}`);
+                updateStatus(false);
+            };
+            
+            socket.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    log(`Recibido: ${message.event || 'mensaje'} - ${JSON.stringify(message.data || message)}`);
+                    
+                    // Manejar eventos específicos
+                    handleServerMessage(message);
+                } catch (error) {
+                    log(`Error parseando mensaje: ${event.data}`);
+                }
+            };
+        }
+        
+        function handleServerMessage(message) {
+            const event = message.event || message.type;
+            const data = message.data || message;
+            
+            switch (event) {
+                case 'user-connected':
+                    log(`👤 Usuario conectado: ${JSON.stringify(data)}`);
+                    break;
+                case 'user-disconnected':
+                    log(`👤 Usuario desconectado: ${JSON.stringify(data)}`);
+                    break;
+                case 'room-opened':
+                    log(`🏠 Sala abierta: ${JSON.stringify(data)}`);
+                    break;
+                case 'room-closed':
+                    log(`🏠 Sala cerrada: ${JSON.stringify(data)}`);
+                    break;
+                case 'joined-room':
+                    log(`🚪 Te uniste a la sala: ${JSON.stringify(data)}`);
+                    break;
+                case 'left-room':
+                    log(`🚶 Saliste de la sala: ${JSON.stringify(data)}`);
+                    break;
+                case 'public-rooms':
+                    log(`📋 Salas públicas: ${JSON.stringify(data, null, 2)}`);
+                    break;
+                case 'extra-data-updated':
+                    log(`📝 Datos extra actualizados: ${JSON.stringify(data)}`);
+                    break;
+                case 'error':
+                    log(`❌ Error del servidor: ${JSON.stringify(data)}`);
+                    break;
+                default:
+                    log(`📨 Evento desconocido: ${event}`);
+            }
+        }
+        
+        function disconnectFromServer() {
+            if (!isConnected || !socket) {
+                log('No estás conectado al servidor');
+                return;
+            }
+            
+            socket.close(1000, 'Desconexión manual');
+            log('Desconectando del servidor...');
+        }
+        
+        function openRoom() {
+            const roomId = document.getElementById('roomId').value;
+            if (!roomId) {
+                log('Debes ingresar un ID de sala');
+                return;
+            }
+            
+            sendMessage('open-room', {
+                roomid: roomId,
+                extra: { description: 'Sala de prueba', created: Date.now() }
+            });
+        }
+        
+        function joinRoom() {
+            const roomId = document.getElementById('roomId').value;
+            if (!roomId) {
+                log('Debes ingresar un ID de sala');
+                return;
+            }
+            
+            sendMessage('join-room', {
+                roomid: roomId,
+                extra: { joinedAt: Date.now() }
+            });
+        }
+        
+        function leaveRoom() {
+            sendMessage('leave-room');
+        }
+        
+        function getPublicRooms() {
+            sendMessage('get-public-rooms');
+        }
+        
+        function clearLog() {
+            document.getElementById('log').textContent = '';
+        }
+        
+        // Cargar página
+        window.addEventListener('load', () => {
+            log('Cliente WebSocket nativo cargado. Haz clic en "Conectar" para comenzar.');
+            log('Asegúrate de que el servidor esté ejecutándose con: npm run start:websocket');
+        });
+    </script>
+</body>
+</html>

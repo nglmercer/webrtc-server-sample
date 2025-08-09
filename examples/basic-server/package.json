@@ -1,0 +1,49 @@
+{
+  "name": "webrtc-signaling-basic-server",
+  "version": "1.0.0",
+  "description": "Ejemplo básico de servidor de señalización WebRTC",
+  "main": "server-socketio.js",
+  "scripts": {
+    "start": "npm run start:socketio",
+    "start:socketio": "node server-socketio.js",
+    "start:websocket": "node server-websocket.js",
+    "dev": "nodemon server-socketio.js",
+    "dev:websocket": "nodemon server-websocket.js",
+    "test": "node test-connection.js",
+    "lint": "eslint *.js",
+    "format": "prettier --write *.js"
+  },
+  "keywords": [
+    "webrtc",
+    "signaling",
+    "websocket",
+    "socket.io",
+    "real-time",
+    "communication"
+  ],
+  "author": "WebRTC Signaling Team",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "ws": "^8.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "eslint": "^8.45.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/webrtc-server-sample",
+    "directory": "examples/basic-server"
+  },
+  "bugs": {
+    "url": "https://github.com/your-repo/webrtc-server-sample/issues"
+  },
+  "homepage": "https://github.com/your-repo/webrtc-server-sample#readme"
+}
