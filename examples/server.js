@@ -4,8 +4,9 @@ import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer,WebSocketAdapter,logger,getHeartbeatConfig } from 'webrtc-socket-api'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
-//import { WebSocketAdapter } from '../src/adapters/WebSocketAdapter';
+import { SignalingServer,SocketIOLikeSocket,SocketIOLikeServer,logger,getHeartbeatConfig } from '../dist/index.js'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
+
+//import { SocketIOLikeSocket } from '../src/adapters/SocketIOLikeSocket';
 //import { logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
 
@@ -42,13 +43,8 @@ app.use(express.static(path.join(publicPath, 'public')));
 
 
 // Configurar Socket.IO
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: defaultConfig.corsOrigin,
-    methods: ['GET', 'POST']
-  },
-  transports: ['websocket', 'polling']
-});
+const io = new SocketIOLikeServer();
+
 
 io.on('connection', (socket) => {
   logger.info('Nueva conexión Socket.IO', {
@@ -68,37 +64,7 @@ io.on('connection', (socket) => {
     });
   });
 });
-
-// Configurar WebSocket nativo
-const wss = new WebSocketServer({
-  server: server,
-  path: '/ws',
-  perMessageDeflate: false
-});
-
-wss.on('connection', (ws, request) => {
-  const clientIP = request.socket.remoteAddress;
-  logger.info('Nueva conexión WebSocket', {
-    clientIP,
-    userAgent: request.headers['user-agent']
-  });
-  const adapter = new WebSocketAdapter(ws, request);
-  signalingServer.handleConnection(adapter);
-  ws.on('close', (code, reason) => {
-    logger.info('Desconexión WebSocket', {
-      socketId: adapter.id,
-      code,
-      reason: reason.toString(),
-      clientIP
-    });
-  });
-  ws.on('error', (error) => {
-    logger.error('Error WebSocket', error, {
-      socketId: adapter.id,
-      clientIP
-    });
-  });
-});
+io.attach(server)
 
 // Iniciar servidor
 server.listen(defaultConfig.port, () => {
@@ -108,8 +74,6 @@ server.listen(defaultConfig.port, () => {
   console.log(`🔌 WebSocket: Habilitado`);
   console.log(`💓 Heartbeat: Habilitado`);
   console.log(`\n📋 Endpoints disponibles:`);
-  console.log(`   • ws://localhost:${defaultConfig.port}/socket.io/ - Socket.IO`);
-  console.log(`   • ws://localhost:${defaultConfig.port}/ws - WebSocket nativo`);
 });
 
 server.on('error', (error) => {
