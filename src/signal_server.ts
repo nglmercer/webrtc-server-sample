@@ -145,11 +145,11 @@ export class SignalingServer {
       });
       
       defaultHeartbeatManager.on('ping-timeout', (socketId, failedCount) => {
-        logger.debug(`Ping timeout para socket ${socketId}, intentos fallidos: ${failedCount}`,{socketId});
+        logger.debug(`Ping timeout para socket ${socketId}, intentos fallidos: ${failedCount}, ${finalConfig.pingInterval}`,{socketId});
       });
       
       // Iniciar el heartbeat manager
-      defaultHeartbeatManager.start();
+      defaultHeartbeatManager.start(finalConfig);
       
       logger.info('HeartbeatManager configurado y iniciado', { config: finalConfig });
     } catch (error) {

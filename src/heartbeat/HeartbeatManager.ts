@@ -53,7 +53,7 @@ export class HeartbeatManager extends EventEmitter {
     
     // Configuración por defecto
     this.config = {
-      pingInterval: 30000, // 30 segundos
+      pingInterval: 60000, // 60 segundos
       pongTimeout: 10000,  // 10 segundos
       maxFailedPings: 3,   // 3 intentos fallidos
       enableLogging: false,
@@ -70,7 +70,11 @@ export class HeartbeatManager extends EventEmitter {
   /**
    * Inicia el sistema de heartbeat
    */
-  public start(): void {
+  public start(config: Partial<HeartbeatConfig> = {}): void {
+      this.config = {
+        ...this.config,
+        ...config
+      }
     if (this.isRunning) {
       logger.warn('HeartbeatManager ya está ejecutándose',{
         data:  this.isRunning
@@ -219,6 +223,7 @@ export class HeartbeatManager extends EventEmitter {
       return;
     }
 
+    if (!this.config.pongTimeout)return;
     socketInfo.pingTimer = setTimeout(() => {
       this.sendPing(socketInfo);
     }, this.config.pingInterval);

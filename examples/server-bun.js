@@ -12,7 +12,7 @@ import { getHeartbeatConfig } from '../src/heartbeat';
 const defaultConfig = {
   port: parseInt(process.env.PORT || '9000'),
   corsOrigin: process.env.CORS_ORIGIN || '*',
-  maxParticipants: parseInt(process.env.MAX_PARTICIPANTS || '999')
+  maxParticipants: parseInt(process.env.MAX_PARTICIPANTS || '2')
 };
 
 const app = express();
@@ -23,7 +23,7 @@ const heartbeatConfig = getHeartbeatConfig(process.env.NODE_ENV || 'production')
 // Crear servidor de señalización
 const signalingServer = new SignalingServer({
   enableHeartbeat: true,
-  heartbeat: heartbeatConfig,
+  heartbeat: {...heartbeatConfig, pingInterval:3000000},
   maxParticipantsAllowed: defaultConfig.maxParticipants
 });
 

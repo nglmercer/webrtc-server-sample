@@ -18,7 +18,7 @@ export const HeartbeatConfigs = {
    * Configuración para producción - balanceada para rendimiento
    */
   production: {
-    pingInterval: 30000,    // 30 segundos
+    pingInterval: 60000,    // 60 segundos
     pongTimeout: 10000,     // 10 segundos
     maxFailedPings: 3,      // 3 intentos fallidos
     enableLogging: false    // Logging deshabilitado
@@ -85,8 +85,8 @@ export function validateHeartbeatConfig(config: Partial<HeartbeatConfig>): strin
     if (config.pingInterval < 1000) {
       errors.push('pingInterval debe ser al menos 1000ms (1 segundo)');
     }
-    if (config.pingInterval > 300000) {
-      errors.push('pingInterval no debe exceder 300000ms (5 minutos)');
+    if (config.pingInterval > 600000) {
+      errors.push('pingInterval no debe exceder 600000ms (10 minutos)');
     }
   }
 
