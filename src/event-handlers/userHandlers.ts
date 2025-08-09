@@ -1,6 +1,6 @@
 import { User, Room, CustomSocket } from "../types";
 import { CONST_STRINGS } from "../constants";
-import pushLogs from "../pushLogs";
+import pushLogs from "../logger/pushLogs";
 import { appendUser } from "../utils/userUtils";
 
 export function registerUserHandlers(

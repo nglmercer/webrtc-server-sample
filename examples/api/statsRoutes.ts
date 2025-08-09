@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import signalingServer from '../signal_server';
-import { logger } from '../logger';
+import signalingServer from '../../src/signal_server';
+import { logger } from '../../src/logger';
 
 const router = Router();
 

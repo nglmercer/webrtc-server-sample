@@ -10,6 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "examples/server.ts", "examples/example.js", "examples/api"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

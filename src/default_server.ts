@@ -1,4 +1,4 @@
-import pushLogs from "./pushLogs";
+import pushLogs from "./logger/pushLogs";
 import { CONST_STRINGS } from "./constants";
 import type { User, Room, CustomSocket, ISocket } from "./types";
 import { appendUser } from "./utils/userUtils";
@@ -6,7 +6,7 @@ import { handleDisconnect } from "./utils/socketUtils";
 import { registerRoomHandlers } from "./event-handlers/roomHandlers";
 import { registerUserHandlers } from "./event-handlers/userHandlers";
 import { registerMessageHandlers } from "./event-handlers/messageHandlers";
-import { WebSocketAdapter } from "./WebSocketAdapter";
+import { WebSocketAdapter } from "./adapters/WebSocketAdapter";
 import { nanoid } from 'nanoid';
 let listOfRooms: { [key: string]: Room } = {};
 let listOfUsers: { [key: string]: User } = {};

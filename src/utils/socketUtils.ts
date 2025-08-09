@@ -1,6 +1,6 @@
 import { User, Room, CustomSocket } from "../types";
 import { closeOrShiftRoom } from "./roomUtils";
-import pushLogs from "../pushLogs";
+import pushLogs from "../logger/pushLogs";
 import { logger } from "../logger";
 import { defaultHeartbeatManager } from "../heartbeat";
 

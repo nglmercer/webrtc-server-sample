@@ -1,5 +1,5 @@
 import { User, Room, CustomSocket } from "../types";
-import pushLogs from "../pushLogs";
+import pushLogs from "../logger/pushLogs";
 
 function onMessageCallback(
   socket: CustomSocket,
@@ -87,7 +87,7 @@ function relayMessage(socket: CustomSocket, message:any, listOfUsers: { [key: st
 
     // 1. Verificación de seguridad: ¿Existe el destinatario?
     if (!remoteUser) {
-        console.warn(`[Server] Intento de enviar mensaje a un usuario no encontrado: ${remoteUserId}`,remoteUser,message);
+        console.warn(`[Server] Intento de enviar mensaje a un usuario no encontrado: ${remoteUserId}`);
         socket.emit("user-not-found", remoteUserId); // Notificar al remitente si se desea
         return;
     }
@@ -130,7 +130,14 @@ export function registerMessageHandlers(
       }
 
       if (!listOfUsers[message.sender]) {
-        listOfUsers[message.sender] = { socket, connectedWith: {}, extra: {}, socketMessageEvent: "", socketCustomEvent: "" };
+        listOfUsers[message.sender] = { 
+            socket, 
+            connectedWith: {}, 
+            extra: {}, 
+            socketMessageEvent: "", 
+            socketCustomEvent: "",
+            userid: message.sender 
+        };
       }
 
       onMessageCallback(socket, message, listOfUsers, socketMessageEvent, config);

@@ -1,7 +1,7 @@
-import signaling_server from './signaling_server';
+import signaling_server from './default_server';
 import defaultSignal, { SignalingServer } from './signal_server';
-import { WebSocketAdapter } from './WebSocketAdapter';
-import type {
+import { WebSocketAdapter } from './adapters/WebSocketAdapter';
+import {
     User,
     Room,
     CustomSocket,

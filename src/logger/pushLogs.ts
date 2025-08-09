@@ -1,6 +1,6 @@
 // pushLogs.ts - Wrapper de compatibilidad para el nuevo sistema de logging
 
-import { getLogger, LogLevel } from './logger';
+import { getLogger, LogLevel } from '.';
 
 /**
  * Función de compatibilidad con la implementación anterior
@@ -63,7 +63,7 @@ export function pushLogsWithLevel(
 }
 
 // Exportar también el logger para uso directo
-export { getLogger, LogLevel } from './logger';
-export type { LogEntry } from './logger';
+export { getLogger, LogLevel } from '.';
+export type { LogEntry } from '.';
 
 export default pushLogs;

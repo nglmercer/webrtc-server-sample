@@ -103,7 +103,7 @@ console.log('📈 Estadísticas del logger:', JSON.stringify(stats, null, 2));
 // Ejemplo 7: Compatibilidad con pushLogs
 console.log('\n=== Ejemplo 7: Compatibilidad con pushLogs ===');
 
-const { pushLogs, pushLogsWithLevel } = require('../../src/pushLogs');
+const { pushLogs, pushLogsWithLevel } = require('../../src/logger/pushLogs');
 
 // Función original (mantiene compatibilidad)
 pushLogs({}, 'LEGACY_EVENT', 'Mensaje usando la función original');

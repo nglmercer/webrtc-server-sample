@@ -1,5 +1,5 @@
 import { Room, User } from "../types";
-import pushLogs from "../pushLogs";
+import pushLogs from "../logger/pushLogs";
 
 export function appendToRoom(
   roomid: string,

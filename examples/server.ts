@@ -4,11 +4,11 @@ import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer } from './signal_server';
-import { WebSocketAdapter } from './WebSocketAdapter';
-import { logger } from './logger';
+import { SignalingServer } from '../src/signal_server';
+import { WebSocketAdapter } from '../src/adapters/WebSocketAdapter';
+import { logger } from '../src/logger';
 import statsRoutes from './api/statsRoutes';
-import { getHeartbeatConfig } from './heartbeat';
+import { getHeartbeatConfig } from '../src/heartbeat';
 
 // Configuración del servidor
 interface ServerConfig {

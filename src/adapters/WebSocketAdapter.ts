@@ -1,10 +1,10 @@
 import { EventEmitter } from 'events';
 import { RawData, WebSocket } from 'ws';
-import {type ISocket, CustomSocket } from './types';
+import {type ISocket, CustomSocket } from '../types';
 import { ParsedUrlQuery } from 'querystring';
 import * as url from 'url';
 import { nanoid } from 'nanoid';
-import { logger } from './logger';
+import { logger } from '../logger';
 // Hacemos que nuestro adaptador implemente la interfaz ISocket y EventEmitter para manejar eventos
 export class WebSocketAdapter extends EventEmitter implements ISocket {
     id: string;

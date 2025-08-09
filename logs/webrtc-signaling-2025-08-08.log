@@ -127,3 +127,45 @@
 [8/8/2025, 19:23:11] INFO [Iniciando proceso de desconexión para socket UkYTeKmACcc-Pr7RAAAH]  | Data: "user"
 [8/8/2025, 19:23:11] DEBUG [Notificando desconexión a 0 usuarios conectados] 
 [8/8/2025, 19:23:11] INFO [Proceso de desconexión completado para socket UkYTeKmACcc-Pr7RAAAH] 
+[8/8/2025, 19:38:36] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:38:36] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:39:36] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:39:36] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:40:15] DEBUG [Heartbeat configurado para socket j3i1UeGVwgkuzpxZAAAB] 
+[8/8/2025, 19:40:15] INFO [User connected: user] 
+[8/8/2025, 19:40:16] DEBUG [Heartbeat configurado para socket RxtGXrXC_Ru0uJbXAAAD] 
+[8/8/2025, 19:40:16] INFO [User connected: user12313] 
+[8/8/2025, 19:40:55] DEBUG [Ping timeout para socket j3i1UeGVwgkuzpxZAAAB, intentos fallidos: 1] 
+[8/8/2025, 19:40:56] DEBUG [Ping timeout para socket RxtGXrXC_Ru0uJbXAAAD, intentos fallidos: 1] 
+[8/8/2025, 19:41:10] DEBUG [Ping timeout para socket j3i1UeGVwgkuzpxZAAAB, intentos fallidos: 2] 
+[8/8/2025, 19:41:11] DEBUG [Ping timeout para socket RxtGXrXC_Ru0uJbXAAAD, intentos fallidos: 2] 
+[8/8/2025, 19:41:25] DEBUG [Ping timeout para socket j3i1UeGVwgkuzpxZAAAB, intentos fallidos: 3] 
+[8/8/2025, 19:41:25] WARN [Conexión perdida detectada para socket j3i1UeGVwgkuzpxZAAAB] 
+[8/8/2025, 19:41:25] INFO [Iniciando proceso de desconexión para socket j3i1UeGVwgkuzpxZAAAB]  | Data: "user"
+[8/8/2025, 19:41:25] DEBUG [Notificando desconexión a 1 usuarios conectados] 
+[8/8/2025, 19:41:25] INFO [Proceso de desconexión completado para socket j3i1UeGVwgkuzpxZAAAB] 
+[8/8/2025, 19:41:26] DEBUG [Ping timeout para socket RxtGXrXC_Ru0uJbXAAAD, intentos fallidos: 3] 
+[8/8/2025, 19:41:26] WARN [Conexión perdida detectada para socket RxtGXrXC_Ru0uJbXAAAD] 
+[8/8/2025, 19:41:26] INFO [Iniciando proceso de desconexión para socket RxtGXrXC_Ru0uJbXAAAD]  | Data: "user12313"
+[8/8/2025, 19:41:26] DEBUG [Notificando desconexión a 0 usuarios conectados] 
+[8/8/2025, 19:41:26] INFO [Proceso de desconexión completado para socket RxtGXrXC_Ru0uJbXAAAD] 
+[8/8/2025, 19:41:46] INFO [HeartbeatManager configurado y iniciado] 
+[8/8/2025, 19:41:46] INFO [SignalingServer instance created]  | Data: true
+[8/8/2025, 19:41:54] DEBUG [Heartbeat configurado para socket tPvuxRwbqKKDM9rdAAAB] 
+[8/8/2025, 19:41:54] INFO [User connected: user12313] 
+[8/8/2025, 19:41:57] DEBUG [Heartbeat configurado para socket u2l566NHkoCVEDxkAAAD] 
+[8/8/2025, 19:41:57] INFO [User connected: user] 
+[8/8/2025, 19:42:34] DEBUG [Ping timeout para socket tPvuxRwbqKKDM9rdAAAB, intentos fallidos: 1] 
+[8/8/2025, 19:42:37] DEBUG [Ping timeout para socket u2l566NHkoCVEDxkAAAD, intentos fallidos: 1] 
+[8/8/2025, 19:42:49] DEBUG [Ping timeout para socket tPvuxRwbqKKDM9rdAAAB, intentos fallidos: 2] 
+[8/8/2025, 19:42:52] DEBUG [Ping timeout para socket u2l566NHkoCVEDxkAAAD, intentos fallidos: 2] 
+[8/8/2025, 19:43:04] DEBUG [Ping timeout para socket tPvuxRwbqKKDM9rdAAAB, intentos fallidos: 3] 
+[8/8/2025, 19:43:04] WARN [Conexión perdida detectada para socket tPvuxRwbqKKDM9rdAAAB] 
+[8/8/2025, 19:43:04] INFO [Iniciando proceso de desconexión para socket tPvuxRwbqKKDM9rdAAAB]  | Data: "user12313"
+[8/8/2025, 19:43:04] DEBUG [Notificando desconexión a 1 usuarios conectados] 
+[8/8/2025, 19:43:04] INFO [Proceso de desconexión completado para socket tPvuxRwbqKKDM9rdAAAB] 
+[8/8/2025, 19:43:07] DEBUG [Ping timeout para socket u2l566NHkoCVEDxkAAAD, intentos fallidos: 3] 
+[8/8/2025, 19:43:07] WARN [Conexión perdida detectada para socket u2l566NHkoCVEDxkAAAD] 
+[8/8/2025, 19:43:07] INFO [Iniciando proceso de desconexión para socket u2l566NHkoCVEDxkAAAD]  | Data: "user"
+[8/8/2025, 19:43:07] DEBUG [Notificando desconexión a 0 usuarios conectados] 
+[8/8/2025, 19:43:07] INFO [Proceso de desconexión completado para socket u2l566NHkoCVEDxkAAAD] 

@@ -5,13 +5,10 @@ Este directorio contiene ejemplos prácticos para diferentes casos de uso del se
 ## Estructura de Ejemplos
 
 ### Básicos
-- `basic-server/` - Configuración básica del servidor
-- `basic-client/` - Cliente básico de conexión
+- `example.js` - Configuración básica del servidor
 
 ### Administración
-- `admin-panel/` - Panel de administración web completo
-- `monitoring/` - Sistema de monitoreo y métricas
-- `rest-wrapper/` - Wrapper HTTP/REST para gestión
+- `server.ts` 
 
 ### Casos de Uso
 - `video-chat/` - Implementación de videochat
@@ -29,21 +26,3 @@ Este directorio contiene ejemplos prácticos para diferentes casos de uso del se
 - `load-balancer/` - Balanceador de carga
 - `clustering/` - Configuración en cluster
 - `docker-deployment/` - Despliegue con Docker
-
-## Cómo Usar los Ejemplos
-
-1. Navega al directorio del ejemplo que te interese
-2. Lee el README.md específico del ejemplo
-3. Instala las dependencias: `npm install`
-4. Sigue las instrucciones de configuración
-5. Ejecuta el ejemplo: `npm start`
-
-## Requisitos
-
-- Node.js 16+
-- npm o yarn
-- Navegador moderno con soporte WebRTC
-
-## Contribuir
-
-Si tienes ideas para nuevos ejemplos o mejoras a los existentes, ¡las contribuciones son bienvenidas!
