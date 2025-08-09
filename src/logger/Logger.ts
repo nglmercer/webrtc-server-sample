@@ -42,6 +42,7 @@ export interface LogEntry {
   data?: any;
   stack?: string;
   context?: Record<string, any>;
+  [key: string]: any;
 }
 
 /**
@@ -59,6 +60,13 @@ const COLORS = {
 /**
  * Logger principal del sistema
  */
+//{message,data,context}:LogInfo | any
+interface LogInfo {
+  message?: string;
+  data?: any;
+  context?: Record<string, any>;
+  [key: string]: any;
+}
 export class Logger extends EventEmitter {
   private config: LoggerConfig;
   private currentLogFile: string | null = null;
@@ -181,13 +189,14 @@ export class Logger extends EventEmitter {
   /**
    * Crear entrada de log
    */
-  private createLogEntry(level: LogLevel, event: string, message: string, data?: any, context?: Record<string, any>): LogEntry {
+  private createLogEntry(level: LogLevel, event: string, {message,data,context}:LogInfo | any,...args: any[]): LogEntry {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level: LogLevel[level],
       event,
-      message,
-      context
+      message: message || '',
+      context,
+      ...args
     };
 
     if (data !== undefined) {
@@ -266,13 +275,13 @@ export class Logger extends EventEmitter {
   /**
    * Escribir entrada de log
    */
-  private writeLog(level: LogLevel, event: string, message: string, data?: any, context?: Record<string, any>): void {
+  private writeLog(level: LogLevel, event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
     // Verificar si el nivel de log está habilitado
     if (level < this.config.level) {
       return;
     }
 
-    const entry = this.createLogEntry(level, event, message, data, context);
+    const entry = this.createLogEntry(level, event, {message,data,context},...args);
 
     // Emitir evento para listeners externos
     this.emit('log', entry);
@@ -323,34 +332,34 @@ export class Logger extends EventEmitter {
   /**
    * Métodos públicos de logging
    */
-  debug(event: string, message: string, data?: any, context?: Record<string, any>): void {
-    this.writeLog(LogLevel.DEBUG, event, message, data, context);
+  debug(event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
+    this.writeLog(LogLevel.DEBUG, event, {message, data, context},...args);
   }
 
-  info(event: string, message: string, data?: any, context?: Record<string, any>): void {
-    this.writeLog(LogLevel.INFO, event, message, data, context);
+  info(event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
+    this.writeLog(LogLevel.INFO, event, {message, data, context},...args);
   }
 
-  warn(event: string, message: string, data?: any, context?: Record<string, any>): void {
-    this.writeLog(LogLevel.WARN, event, message, data, context);
+  warn(event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
+    this.writeLog(LogLevel.WARN, event, {message, data, context},...args);
   }
 
-  error(event: string, message: string, data?: any, context?: Record<string, any>): void {
-    this.writeLog(LogLevel.ERROR, event, message, data, context);
+  error(event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
+    this.writeLog(LogLevel.ERROR, event, {message, data, context},...args);
   }
 
-  fatal(event: string, message: string, data?: any, context?: Record<string, any>): void {
-    this.writeLog(LogLevel.FATAL, event, message, data, context);
+  fatal(event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
+    this.writeLog(LogLevel.FATAL, event, {message, data, context},...args);
   }
 
   /**
    * Método de compatibilidad con pushLogs original
    */
-  log(event: string, data?: any): void {
+  log(event: string, {message,data,context}:LogInfo | any,...args: any[]): void {
     if (data instanceof Error) {
-      this.error(event, data.message, data);
+      this.error(event, {message:data.message}, data);
     } else {
-      this.info(event, typeof data === 'string' ? data : 'Log event', data);
+      this.info(event, {message, data, context},...args);
     }
   }
 
@@ -434,5 +443,4 @@ export function pushLogs(config: any, log_event: string, log_data: any): void {
   const logger = getLogger();
   logger.log(log_event, log_data);
 }
-
 export default Logger;

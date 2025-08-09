@@ -64,6 +64,6 @@ export function pushLogsWithLevel(
 
 // Exportar también el logger para uso directo
 export { getLogger, LogLevel } from './logger';
-export type { LoggerConfig, LogEntry } from './logger';
+export type { LogEntry } from './logger';
 
 export default pushLogs;

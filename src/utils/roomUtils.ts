@@ -20,6 +20,8 @@ export function appendToRoom(
         audio: true,
         video: true,
       },
+      createdAt: new Date(),
+      maxUsers: maxParticipants
     };
   }
 

@@ -22,11 +22,14 @@ export function appendUser(
     }
 
     listOfUsers[socket.userid] = {
+      userid: socket.userid,
       socket: socket,
       connectedWith: {},
       extra: extra || {},
       socketMessageEvent: params.socketMessageEvent || "",
       socketCustomEvent: params.socketCustomEvent || "",
+      connectedAt: new Date(),
+      roomid: params.sessionid || undefined
     };
   } catch (e) {
     pushLogs(config, "appendUser", e);

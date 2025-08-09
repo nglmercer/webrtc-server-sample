@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente WebRTC con Reconexión Automática</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .reconnecting { background-color: #fff3cd; color: #856404; }
+        .controls {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-success { background-color: #28a745; color: white; }
+        .logs {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 0;
+        }
+        .log-info { color: #0066cc; }
+        .log-warn { color: #ff8800; }
+        .log-error { color: #cc0000; }
+        .log-success { color: #00aa00; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #007bff;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Cliente WebRTC con Reconexión Automática</h1>
+        
+        <div id="status" class="status disconnected">
+            Estado: Desconectado
+        </div>
+        
+        <div class="controls">
+            <button id="connectBtn" class="btn-primary">Conectar</button>
+            <button id="disconnectBtn" class="btn-danger" disabled>Desconectar</button>
+            <button id="simulateErrorBtn" class="btn-warning" disabled>Simular Error</button>
+            <button id="clearLogsBtn" class="btn-secondary">Limpiar Logs</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="connectionTime">0s</div>
+                <div class="stat-label">Tiempo Conectado</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="reconnectAttempts">0</div>
+                <div class="stat-label">Intentos de Reconexión</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="messagesReceived">0</div>
+                <div class="stat-label">Mensajes Recibidos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="heartbeats">0</div>
+                <div class="stat-label">Heartbeats</div>
+            </div>
+        </div>
+        
+        <h3>Logs de Conexión</h3>
+        <div id="logs" class="logs"></div>
+    </div>
+
+    <script>
+        class ReconnectingWebSocketClient {
+            constructor(url, options = {}) {
+                this.url = url;
+                this.options = {
+                    maxReconnectAttempts: options.maxReconnectAttempts || 10,
+                    reconnectInterval: options.reconnectInterval || 1000,
+                    maxReconnectInterval: options.maxReconnectInterval || 30000,
+                    reconnectDecay: options.reconnectDecay || 1.5,
+                    heartbeatInterval: options.heartbeatInterval || 30000,
+                    ...options
+                };
+                
+                this.ws = null;
+                this.reconnectAttempts = 0;
+                this.isConnected = false;
+                this.shouldReconnect = true;
+                this.reconnectTimer = null;
+                this.heartbeatTimer = null;
+                this.connectionStartTime = null;
+                this.connectionTimeTimer = null;
+                
+                // Estadísticas
+                this.stats = {
+                    reconnectAttempts: 0,
+                    messagesReceived: 0,
+                    heartbeats: 0,
+                    connectionTime: 0
+                };
+                
+                // Callbacks
+                this.onopen = null;
+                this.onclose = null;
+                this.onmessage = null;
+                this.onerror = null;
+                this.onreconnect = null;
+            }
+            
+            connect() {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.log('Ya está conectado', 'warn');
+                    return;
+                }
+                
+                this.shouldReconnect = true;
+                this.log(`Conectando a ${this.url}...`, 'info');
+                
+                try {
+                    this.ws = new WebSocket(this.url);
+                    this.setupEventHandlers();
+                } catch (error) {
+                    this.log(`Error al crear WebSocket: ${error.message}`, 'error');
+                    this.scheduleReconnect();
+                }
+            }
+            
+            disconnect() {
+                this.shouldReconnect = false;
+                this.clearTimers();
+                
+                if (this.ws) {
+                    this.ws.close(1000, 'Desconexión manual');
+                }
+                
+                this.updateStatus('disconnected', 'Desconectado manualmente');
+                this.log('Desconectado manualmente', 'info');
+            }
+            
+            setupEventHandlers() {
+                this.ws.onopen = (event) => {
+                    this.isConnected = true;
+                    this.reconnectAttempts = 0;
+                    this.connectionStartTime = Date.now();
+                    
+                    this.updateStatus('connected', 'Conectado');
+                    this.log('Conexión establecida', 'success');
+                    
+                    // Iniciar heartbeat
+                    this.startHeartbeat();
+                    this.startConnectionTimer();
+                    
+                    // Enviar mensaje de identificación
+                    this.send({
+                        type: 'join',
+                        userid: 'client-' + Math.random().toString(36).substr(2, 9),
+                        roomid: 'test-room'
+                    });
+                    
+                    if (this.onopen) this.onopen(event);
+                    if (this.onreconnect && this.stats.reconnectAttempts > 0) {
+                        this.onreconnect(event);
+                    }
+                };
+                
+                this.ws.onclose = (event) => {
+                    this.isConnected = false;
+                    this.clearTimers();
+                    
+                    const reason = event.reason || 'Razón desconocida';
+                    this.log(`Conexión cerrada: ${reason} (código: ${event.code})`, 'warn');
+                    
+                    if (this.shouldReconnect && event.code !== 1000) {
+                        this.updateStatus('reconnecting', 'Reconectando...');
+                        this.scheduleReconnect();
+                    } else {
+                        this.updateStatus('disconnected', 'Desconectado');
+                    }
+                    
+                    if (this.onclose) this.onclose(event);
+                };
+                
+                this.ws.onerror = (event) => {
+                    this.log('Error de WebSocket', 'error');
+                    if (this.onerror) this.onerror(event);
+                };
+                
+                this.ws.onmessage = (event) => {
+                    this.stats.messagesReceived++;
+                    this.updateStats();
+                    
+                    try {
+                        const data = JSON.parse(event.data);
+                        this.log(`Mensaje recibido: ${data.type || 'unknown'}`, 'info');
+                        
+                        // Manejar pong del servidor
+                        if (data.type === 'pong') {
+                            this.stats.heartbeats++;
+                            this.updateStats();
+                        }
+                        
+                        if (this.onmessage) this.onmessage(event);
+                    } catch (error) {
+                        this.log(`Error al parsear mensaje: ${error.message}`, 'error');
+                    }
+                };
+            }
+            
+            scheduleReconnect() {
+                if (!this.shouldReconnect) return;
+                
+                if (this.reconnectAttempts >= this.options.maxReconnectAttempts) {
+                    this.log('Máximo número de intentos de reconexión alcanzado', 'error');
+                    this.updateStatus('disconnected', 'Falló la reconexión');
+                    return;
+                }
+                
+                const timeout = Math.min(
+                    this.options.reconnectInterval * Math.pow(this.options.reconnectDecay, this.reconnectAttempts),
+                    this.options.maxReconnectInterval
+                );
+                
+                this.reconnectAttempts++;
+                this.stats.reconnectAttempts++;
+                this.updateStats();
+                
+                this.log(`Reintentando conexión en ${timeout}ms (intento ${this.reconnectAttempts})`, 'warn');
+                
+                this.reconnectTimer = setTimeout(() => {
+                    this.connect();
+                }, timeout);
+            }
+            
+            startHeartbeat() {
+                this.heartbeatTimer = setInterval(() => {
+                    if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
+                        this.send({ type: 'ping', timestamp: Date.now() });
+                    }
+                }, this.options.heartbeatInterval);
+            }
+            
+            startConnectionTimer() {
+                this.connectionTimeTimer = setInterval(() => {
+                    if (this.isConnected && this.connectionStartTime) {
+                        this.stats.connectionTime = Math.floor((Date.now() - this.connectionStartTime) / 1000);
+                        this.updateStats();
+                    }
+                }, 1000);
+            }
+            
+            clearTimers() {
+                if (this.reconnectTimer) {
+                    clearTimeout(this.reconnectTimer);
+                    this.reconnectTimer = null;
+                }
+                if (this.heartbeatTimer) {
+                    clearInterval(this.heartbeatTimer);
+                    this.heartbeatTimer = null;
+                }
+                if (this.connectionTimeTimer) {
+                    clearInterval(this.connectionTimeTimer);
+                    this.connectionTimeTimer = null;
+                }
+            }
+            
+            send(data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                    return true;
+                }
+                return false;
+            }
+            
+            simulateError() {
+                if (this.ws) {
+                    this.log('Simulando error de conexión...', 'warn');
+                    this.ws.close(1006, 'Error simulado');
+                }
+            }
+            
+            updateStatus(type, message) {
+                const statusEl = document.getElementById('status');
+                statusEl.className = `status ${type}`;
+                statusEl.textContent = `Estado: ${message}`;
+                
+                // Actualizar botones
+                const connectBtn = document.getElementById('connectBtn');
+                const disconnectBtn = document.getElementById('disconnectBtn');
+                const simulateBtn = document.getElementById('simulateErrorBtn');
+                
+                if (type === 'connected') {
+                    connectBtn.disabled = true;
+                    disconnectBtn.disabled = false;
+                    simulateBtn.disabled = false;
+                } else {
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                    simulateBtn.disabled = true;
+                }
+            }
+            
+            updateStats() {
+                document.getElementById('connectionTime').textContent = `${this.stats.connectionTime}s`;
+                document.getElementById('reconnectAttempts').textContent = this.stats.reconnectAttempts;
+                document.getElementById('messagesReceived').textContent = this.stats.messagesReceived;
+                document.getElementById('heartbeats').textContent = this.stats.heartbeats;
+            }
+            
+            log(message, type = 'info') {
+                const logsEl = document.getElementById('logs');
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry log-${type}`;
+                logEntry.textContent = `[${timestamp}] ${message}`;
+                logsEl.appendChild(logEntry);
+                logsEl.scrollTop = logsEl.scrollHeight;
+            }
+        }
+        
+        // Inicializar cliente
+        const wsUrl = 'ws://localhost:3000';
+        const client = new ReconnectingWebSocketClient(wsUrl, {
+            maxReconnectAttempts: 10,
+            reconnectInterval: 2000,
+            maxReconnectInterval: 30000,
+            heartbeatInterval: 30000
+        });
+        
+        // Event handlers
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            client.connect();
+        });
+        
+        document.getElementById('disconnectBtn').addEventListener('click', () => {
+            client.disconnect();
+        });
+        
+        document.getElementById('simulateErrorBtn').addEventListener('click', () => {
+            client.simulateError();
+        });
+        
+        document.getElementById('clearLogsBtn').addEventListener('click', () => {
+            document.getElementById('logs').innerHTML = '';
+        });
+        
+        // Conectar automáticamente al cargar
+        client.log('Cliente inicializado. Haz clic en "Conectar" para comenzar.', 'info');
+    </script>
+</body>
+</html>

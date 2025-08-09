@@ -1,6 +1,6 @@
 // config.ts - Configuración del sistema de logging
 
-import { LogLevel, LoggerConfig } from './Logger';
+import { LogLevel,type LoggerConfig } from './Logger';
 import path from 'path';
 
 /**

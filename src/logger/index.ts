@@ -3,8 +3,8 @@
 export {
   Logger,
   LogLevel,
-  LoggerConfig,
-  LogEntry,
+  type LoggerConfig,
+  type LogEntry,
   getLogger,
   pushLogs
 } from './Logger';
@@ -48,5 +48,6 @@ export const log = {
   fatal: (event: string, message: string, data?: any, context?: Record<string, any>) => 
     defaultLogger.fatal(event, message, data, context)
 };
+export const logger = getLogger();
 
 export default defaultLogger;

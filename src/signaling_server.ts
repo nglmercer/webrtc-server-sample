@@ -1,6 +1,6 @@
 import pushLogs from "./pushLogs";
 import { CONST_STRINGS } from "./constants";
-import { User, Room, CustomSocket, ISocket } from "./types";
+import type { User, Room, CustomSocket, ISocket } from "./types";
 import { appendUser } from "./utils/userUtils";
 import { handleDisconnect } from "./utils/socketUtils";
 import { registerRoomHandlers } from "./event-handlers/roomHandlers";

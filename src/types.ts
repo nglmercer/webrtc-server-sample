@@ -17,12 +17,14 @@ interface ISocket {
 
 
 interface User {
+    userid: string;
     socket: CustomSocket;
     connectedWith: { [key: string]: CustomSocket };
     extra: any;
     socketMessageEvent: string;
     socketCustomEvent: string;
     roomid?: string;
+    connectedAt?: Date;
 }
 
 interface Room {
@@ -41,6 +43,10 @@ interface Room {
         scalable?: boolean;
     };
     password?: string;
+    createdAt?: Date;
+    maxUsers?: number;
+    // Computed property getter for users based on participants
+    users?: User[];
 }
 
 interface CustomSocket extends ISocket {
@@ -53,9 +59,10 @@ interface CustomSocket extends ISocket {
         streams: any;
         extra: any;
     };
+    connected?: boolean;
     ondisconnect?: () => void;
 }
-export {
+export type{
     User,
     Room,
     CustomSocket,

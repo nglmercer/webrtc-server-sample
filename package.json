@@ -11,9 +11,14 @@
   "homepage": "https://github.com/nglmercer/webrtc-server-sample#readme",
   "scripts": {
     "build": "tsc",
-    "start": "ts-node src/index.ts",
-    "dev": "nodemon src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node dist/server.js",
+    "start:ts": "ts-node src/server.ts",
+    "dev": "nodemon src/server.ts",
+    "dev:legacy": "nodemon src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server:socketio": "cross-env ENABLE_WEBSOCKET=false ts-node src/server.ts",
+    "server:websocket": "cross-env ENABLE_SOCKETIO=false ts-node src/server.ts",
+    "server:full": "ts-node src/server.ts"
   },
   "keywords": [
     "webrtc",
@@ -23,10 +28,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "nanoid": "^5.1.5",
     "socket.io": "^4.7.2",
-    "webrtc-socket-api": "^1.0.2"
+    "webrtc-socket-api": "^1.0.2",
+    "ws": "^8.14.2"
   },
   "files": [
     "dist",
@@ -34,9 +41,12 @@
     "README.ES.md"
   ],
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.17",
     "@types/node": "^20.8.9",
     "@types/socket.io": "^3.0.2",
+    "@types/ws": "^8.5.10",
+    "cross-env": "^7.0.3",
     "nodemon": "^3.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.2.2"

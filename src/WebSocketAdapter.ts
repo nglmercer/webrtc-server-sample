@@ -1,9 +1,10 @@
 import { EventEmitter } from 'events';
 import { RawData, WebSocket } from 'ws';
-import { ISocket, CustomSocket } from './types';
+import {type ISocket, CustomSocket } from './types';
 import { ParsedUrlQuery } from 'querystring';
 import * as url from 'url';
 import { nanoid } from 'nanoid';
+import { logger } from './logger';
 // Hacemos que nuestro adaptador implemente la interfaz ISocket y EventEmitter para manejar eventos
 export class WebSocketAdapter extends EventEmitter implements ISocket {
     id: string;
@@ -12,6 +13,9 @@ export class WebSocketAdapter extends EventEmitter implements ISocket {
     };
     // Almacenamos el socket nativo
     private ws: WebSocket;
+    private isConnected: boolean = true;
+    private lastActivity: number = Date.now();
+    private connectionStartTime: number = Date.now();
 
     // Extendemos EventEmitter, por lo que 'on' y 'emit' (para eventos internos) ya existen.
     // Solo necesitamos sobreescribir el 'emit' que envía datos por el cable.
@@ -55,35 +59,111 @@ export class WebSocketAdapter extends EventEmitter implements ISocket {
         });
 
         // Mapeamos el evento 'close' de ws al evento 'disconnect' que tu lógica espera
-        this.ws.on('close', () => {
-            super.emit('disconnect');
+        this.ws.on('close', (code: number, reason: Buffer) => {
+            this.isConnected = false;
+            const reasonString = reason.toString();
+            logger.info(`WebSocket ${this.id} cerrado`, {
+                code,
+                reason: reasonString,
+                duration: Date.now() - this.connectionStartTime
+            });
+            super.emit('disconnect', code, reasonString);
         });
 
         this.ws.on('error', (err: Error) => {
-            console.error(`Error en WebSocket ${this.id}:`, err);
+            this.isConnected = false;
+            logger.error(`Error en WebSocket ${this.id}:`, err);
             super.emit('disconnect'); // Un error a menudo resulta en una desconexión
+        });
+
+        // Manejar eventos de ping/pong nativos de WebSocket
+        this.ws.on('ping', (data: Buffer) => {
+            this.lastActivity = Date.now();
+            // Responder automáticamente al ping
+            if (this.isConnected) {
+                this.ws.pong(data);
+            }
+        });
+
+        this.ws.on('pong', (data: Buffer) => {
+            this.lastActivity = Date.now();
+            super.emit('pong', data);
         });
     }
 
     // Este es el método que tu lógica usará para enviar datos al cliente.
     emit(event: string, ...args: any[]): boolean {
+        if (!this.isConnected || this.ws.readyState !== WebSocket.OPEN) {
+            logger.warn(`Intento de envío a WebSocket ${this.id} desconectado`,{data:event});
+            return false;
+        }
+
         try {
             const message = JSON.stringify({
                 event: event,
                 payload: args
             });
             this.ws.send(message);
+            this.lastActivity = Date.now();
             return true;
         } catch (error) {
-            console.error('Error al enviar mensaje por WS:', error);
+            logger.error(`Error al enviar mensaje por WS ${this.id}:`, error);
+            this.isConnected = false;
             return false;
         }
     }
 
     // Este método cierra la conexión nativa
     disconnect(close?: boolean): this {
-        this.ws.close();
+        if (this.isConnected) {
+            this.isConnected = false;
+            try {
+                this.ws.close(1000, 'Normal closure');
+            } catch (error) {
+                logger.error(`Error cerrando WebSocket ${this.id}:`, error);
+            }
+        }
         return this;
+    }
+
+    /**
+     * Envía un ping nativo de WebSocket
+     */
+    ping(data?: Buffer): void {
+        if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
+            try {
+                this.ws.ping(data);
+                this.lastActivity = Date.now();
+            } catch (error) {
+                logger.error(`Error enviando ping a WebSocket ${this.id}:`, error);
+            }
+        }
+    }
+
+    /**
+     * Obtiene información de estado de la conexión
+     */
+    getConnectionInfo(): {
+        id: string;
+        isConnected: boolean;
+        readyState: number;
+        lastActivity: number;
+        connectionDuration: number;
+    } {
+        return {
+            id: this.id,
+            isConnected: this.isConnected,
+            readyState: this.ws.readyState,
+            lastActivity: this.lastActivity,
+            connectionDuration: Date.now() - this.connectionStartTime
+        };
+    }
+
+    /**
+     * Verifica si la conexión está activa
+     */
+    isAlive(): boolean {
+        return this.isConnected && this.ws.readyState === WebSocket.OPEN;
     }
 
     // Propiedad nsp no es nativa de ws, la agregamos por compatibilidad con tu código de desconexión
