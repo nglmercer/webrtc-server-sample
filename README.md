@@ -206,6 +206,33 @@ npm install
 npm run dev      # ts-node + nodemon
 ```
 
+### Building and Publishing
+
+```bash
+# Build the project
+npm run build
+
+# Check package contents before publishing
+npm run pack:check
+
+# Publish to NPM (automated with distribution branch)
+npm run publish:npm
+
+# Test publish without actually publishing
+npm run publish:dry-run
+```
+
+**Note**: This project uses a special publishing strategy where the `dist/` folder is kept in `.gitignore` but published to NPM using a temporary distribution branch. See [`docs/PUBLISHING_NPM.md`](./docs/PUBLISHING_NPM.md) for detailed information.
+
+### Available Scripts
+
+- `npm run build` - Compile TypeScript to JavaScript
+- `npm run dev` - Development server with hot reload
+- `npm run start` - Start production server
+- `npm run publish:npm` - Automated NPM publishing with dist branch
+- `npm run publish:dry-run` - Test publishing process
+- `npm run pack:check` - Preview package contents
+
 ---
 
 ## 📄 License
