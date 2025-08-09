@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer,logger,getHeartbeatConfig,BunWebSocketAdapter } from '../src/index';
+import { SignalingServer,logger,getHeartbeatConfig,BunWebSocketAdapter } from 'webrtc-socket-api';
 //import { BunWebSocketAdapter } from '../src/adapters/BunWebSocketAdapter';
 //import { logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';

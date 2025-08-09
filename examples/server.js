@@ -4,7 +4,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer,WebSocketAdapter,logger,getHeartbeatConfig } from '../dist/index.js'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
+import { SignalingServer,WebSocketAdapter,logger,getHeartbeatConfig } from 'webrtc-socket-api'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
 //import { WebSocketAdapter } from '../src/adapters/WebSocketAdapter';
 //import { logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';

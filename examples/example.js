@@ -2,7 +2,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { defaultSignal} from '../dist/index.js';//prod=  'webrtc-socket-api'  || dev= './index'
+import { SignalingServer, getHeartbeatConfig} from 'webrtc-socket-api';//prod=  'webrtc-socket-api'  || dev= './index'
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
@@ -11,21 +11,30 @@ const io = new Server(httpServer, {
     }
 });
 app.use(express.static('public'));
-const PORT = process.env.PORT || 9001
-
-
+const PORT = parseInt(process.env.PORT || '9001')
+const defaultConfig = {
+  port: PORT,
+  corsOrigin: process.env.CORS_ORIGIN || '*',
+  maxParticipants: parseInt(process.env.MAX_PARTICIPANTS || '999')
+};
+const heartbeatConfig = getHeartbeatConfig(process.env.NODE_ENV || 'production');
+const signalingServer = new SignalingServer({
+  enableHeartbeat: true,
+  heartbeat: heartbeatConfig,
+  maxParticipantsAllowed: defaultConfig.maxParticipants
+});
 io.on('connection', (socket) => {
     console.log(`\n[Server] New user connected with socket ID: ${socket.id}`);
 
-    defaultSignal.handleConnection(socket);
+    signalingServer.handleConnection(socket);
     socket.on('disconnect', () => {
         console.log(`[Server] User with socket ID ${socket.id} has disconnected.`);
     });
 });
 function SocketLogs(){
         setInterval(() => {
-        const rooms = defaultSignal.getRooms();
-        const users = defaultSignal.getUsers();
+        const rooms = signalingServer.getRooms();
+        const users = signalingServer.getUsers();
         
         // Imprimir solo información resumida de las salas
         const roomsSummary = Object.keys(rooms).map(roomId => ({
