@@ -10,6 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": true
   },
-  "include": ["src/**/*", "examples/api"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
