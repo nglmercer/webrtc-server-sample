@@ -2,7 +2,7 @@
 import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
-import { defaultSignal,WebSocketAdapter } from '../src/index';//prod=  'webrtc-socket-api'  || dev= './index'
+import { defaultSignal} from 'webrtc-socket-api';//prod=  'webrtc-socket-api'  || dev= './index'
 const app = express();
 const httpServer = http.createServer(app);
 const io = new Server(httpServer, {
