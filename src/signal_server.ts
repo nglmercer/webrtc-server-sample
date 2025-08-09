@@ -6,7 +6,7 @@ import { handleDisconnect, setupHeartbeat, getSocketStats, isSocketConnected } f
 import { registerRoomHandlers } from "./event-handlers/roomHandlers.js";
 import { registerUserHandlers } from "./event-handlers/userHandlers.js";
 import { registerMessageHandlers } from "./event-handlers/messageHandlers.js";
-import { WebSocketAdapter } from "./adapters/WebSocketAdapter.js";
+import { SocketIOLikeSocket } from "./adapters/SocketIOLikeAdapter.js";
 import { nanoid } from 'nanoid';
 import { defaultHeartbeatManager, HeartbeatConfig, getHeartbeatConfig } from "./heartbeat/index.js";
 import { logger } from "./logger/index.js";
@@ -44,7 +44,7 @@ export class SignalingServer {
    * @param {ISocket | WebSocketAdapter} socket - El socket del cliente que se conecta.
    * @returns {ISocket} El socket procesado.
    */
-  public handleConnection(socket: ISocket | WebSocketAdapter): ISocket {
+  public handleConnection(socket: ISocket | SocketIOLikeSocket): ISocket {
     const customSocket = socket as CustomSocket;
 
     let params = customSocket.handshake.query as any;

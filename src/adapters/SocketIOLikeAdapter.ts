@@ -265,9 +265,33 @@ export class SocketIOLikeServer extends EventEmitter {
     this.emitter = new Emitter();
   }
 
-  // Inicializar servidor WebSocket
+  // Inicializar servidor WebSocket con puerto específico
   listen(port: number, callback?: () => void): void {
     this.wss = new WebSocketServer({ port });
+    this.setupWebSocketServer();
+
+    if (callback) {
+      callback();
+    }
+    
+    logger.info(`Servidor SocketIO-like escuchando en puerto ${port}`,{});
+  }
+
+  // Inicializar servidor WebSocket usando un servidor HTTP existente
+  attach(server: any, callback?: () => void): void {
+    this.wss = new WebSocketServer({ server });
+    this.setupWebSocketServer();
+
+    if (callback) {
+      callback();
+    }
+    
+    logger.info('Servidor SocketIO-like adjuntado al servidor HTTP existente',{});
+  }
+
+  // Configurar eventos del servidor WebSocket (método privado compartido)
+  private setupWebSocketServer(): void {
+    if (!this.wss) return;
     
     this.wss.on('connection', (ws: WebSocket, request: any) => {
       const socket = new SocketIOLikeSocket(ws, request, this);
@@ -277,12 +301,6 @@ export class SocketIOLikeServer extends EventEmitter {
       this.emitter.emit('connection', socket);
       super.emit('connection', socket);
     });
-
-    if (callback) {
-      callback();
-    }
-    
-    logger.info(`Servidor SocketIO-like escuchando en puerto ${port}`,{});
   }
 
   // Registrar usuario

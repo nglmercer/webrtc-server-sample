@@ -6,12 +6,12 @@ import { handleDisconnect } from "./utils/socketUtils.js";
 import { registerRoomHandlers } from "./event-handlers/roomHandlers.js";
 import { registerUserHandlers } from "./event-handlers/userHandlers.js";
 import { registerMessageHandlers } from "./event-handlers/messageHandlers.js";
-import { WebSocketAdapter } from "./adapters/WebSocketAdapter.js";
+import { SocketIOLikeSocket } from "./adapters/SocketIOLikeAdapter.js";
 import { nanoid } from 'nanoid';
 let listOfRooms: { [key: string]: Room } = {};
 let listOfUsers: { [key: string]: User } = {};
 
-export default function signaling_server(socket: ISocket | WebSocketAdapter, config: any = {}): ISocket {
+export default function signaling_server(socket: ISocket | SocketIOLikeSocket, config: any = {}): ISocket {
   const customSocket = socket as CustomSocket;
 
   function onConnection(socket: CustomSocket) {
