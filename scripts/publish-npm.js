@@ -78,8 +78,18 @@ function publishToNpm(config) {
     run(`git checkout -b ${tempBranch}`);
 
     console.log("📦 Preparando archivos de distribución...");
-    run("git stash push -m 'temp-dist-stash' --include-untracked");
-    run(`git checkout stash -- ${outputDir}`);
+    const stashResult = runSilent(`git diff --name-only ${outputDir}`);
+    if (stashResult) {
+      run(`git stash push -m 'temp-dist-stash' --include-untracked`);
+      run(`git checkout stash -- ${outputDir}`);
+      run(`git add ${outputDir}`);
+    } else {
+      console.log(`ℹ️ No hay cambios para stashear en ${outputDir}, usando el build directo...`);
+      run(`git add ${outputDir}`);
+    }
+
+    run(`git commit -m "Add ${outputDir} files for npm publishing"`);
+
     run(`git add ${outputDir}`);
     run(`git commit -m "Add ${outputDir} files for npm publishing"`);
 
