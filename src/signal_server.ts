@@ -1,15 +1,15 @@
-import pushLogs from "./logger/pushLogs";
-import { CONST_STRINGS } from "./constants";
-import type{ User, Room, CustomSocket, ISocket } from "./types";
-import { appendUser } from "./utils/userUtils";
-import { handleDisconnect, setupHeartbeat, getSocketStats, isSocketConnected } from "./utils/socketUtils";
-import { registerRoomHandlers } from "./event-handlers/roomHandlers";
-import { registerUserHandlers } from "./event-handlers/userHandlers";
-import { registerMessageHandlers } from "./event-handlers/messageHandlers";
-import { WebSocketAdapter } from "./adapters/WebSocketAdapter";
+import pushLogs from "./logger/pushLogs.js";
+import { CONST_STRINGS } from "./constants.js";
+import type{ User, Room, CustomSocket, ISocket } from "./types.js";
+import { appendUser } from "./utils/userUtils.js";
+import { handleDisconnect, setupHeartbeat, getSocketStats, isSocketConnected } from "./utils/socketUtils.js";
+import { registerRoomHandlers } from "./event-handlers/roomHandlers.js";
+import { registerUserHandlers } from "./event-handlers/userHandlers.js";
+import { registerMessageHandlers } from "./event-handlers/messageHandlers.js";
+import { WebSocketAdapter } from "./adapters/WebSocketAdapter.js";
 import { nanoid } from 'nanoid';
-import { defaultHeartbeatManager, HeartbeatConfig, getHeartbeatConfig } from "./heartbeat";
-import { logger } from "./logger";
+import { defaultHeartbeatManager, HeartbeatConfig, getHeartbeatConfig } from "./heartbeat/index.js";
+import { logger } from "./logger/index.js";
 
 /**
  * SignalingServer maneja toda la lógica, el estado y las conexiones

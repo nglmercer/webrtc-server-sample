@@ -1,4 +1,4 @@
-import {type  HeartbeatConfig } from './HeartbeatManager';
+import {type  HeartbeatConfig } from './HeartbeatManager.js';
 
 /**
  * Configuraciones predefinidas para diferentes entornos

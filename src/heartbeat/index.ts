@@ -8,14 +8,14 @@
  * - Métricas de conexión en tiempo real
  */
 
-export { HeartbeatManager,type HeartbeatConfig,type HeartbeatEvents, defaultHeartbeatManager } from './HeartbeatManager';
+export { HeartbeatManager,type HeartbeatConfig,type HeartbeatEvents, defaultHeartbeatManager } from './HeartbeatManager.js';
 export { 
   HeartbeatConfigs, 
   getHeartbeatConfig, 
   createCustomHeartbeatConfig, 
   validateHeartbeatConfig,
   getHeartbeatConfigFromEnv 
-} from './config';
+} from './config.js';
 
 // Re-exportar tipos útiles
-export type { HeartbeatConfig as IHeartbeatConfig } from './HeartbeatManager';
+export type { HeartbeatConfig as IHeartbeatConfig } from './HeartbeatManager.js';

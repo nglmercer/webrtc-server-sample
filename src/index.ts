@@ -1,15 +1,15 @@
-import signaling_server from './default_server';
-import defaultSignal, { SignalingServer } from './signal_server';
-import { WebSocketAdapter } from './adapters/WebSocketAdapter';
-import { BunWebSocketAdapter } from './adapters/BunWebSocketAdapter';
-export * from "./logger";
-export * from "./heartbeat"
+import signaling_server from './default_server.js';
+import defaultSignal, { SignalingServer } from './signal_server.js';
+import { WebSocketAdapter } from './adapters/WebSocketAdapter.js';
+import { BunWebSocketAdapter } from './adapters/BunWebSocketAdapter.js';
+export * from "./logger/index.js";
+export * from "./heartbeat/index.js"
 import type{
     User,
     Room,
     CustomSocket,
     ISocket,
-} from './types';
+} from './types.js';
 export {
     signaling_server,
     SignalingServer,

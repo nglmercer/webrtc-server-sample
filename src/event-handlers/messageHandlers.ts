@@ -1,5 +1,5 @@
-import { User, Room, CustomSocket } from "../types";
-import pushLogs from "../logger/pushLogs";
+import { User, Room, CustomSocket } from "../types.js";
+import pushLogs from "../logger/pushLogs.js";
 
 function onMessageCallback(
   socket: CustomSocket,

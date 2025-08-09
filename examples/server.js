@@ -4,14 +4,14 @@ import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer,WebSocketAdapter,logger,getHeartbeatConfig } from 'webrtc-socket-api'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
+import { SignalingServer,WebSocketAdapter,logger,getHeartbeatConfig } from '../dist/index.js'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
 //import { WebSocketAdapter } from '../src/adapters/WebSocketAdapter';
 //import { logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
 
 // Configuración del servidor
 const defaultConfig = {
-  port: parseInt(process.env.PORT || '3000'),
+  port: parseInt(process.env.PORT || '9001'),
   corsOrigin: process.env.CORS_ORIGIN || '*',
   maxParticipants: parseInt(process.env.MAX_PARTICIPANTS || '999')
 };

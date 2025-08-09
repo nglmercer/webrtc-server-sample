@@ -7,7 +7,7 @@ export {
   type LogEntry,
   getLogger,
   pushLogs
-} from './Logger';
+} from './Logger.js';
 
 export {
   LoggerConfigs,
@@ -15,14 +15,14 @@ export {
   createCustomConfig,
   validateConfig,
   DEFAULT_CONFIG
-} from './config';
+} from './config.js';
 
 // Re-exportar tipos para facilitar el uso
-export type { LoggerConfig as ILoggerConfig, LogEntry as ILogEntry } from './Logger';
+export type { LoggerConfig as ILoggerConfig, LogEntry as ILogEntry } from './Logger.js';
 
 // Exportar instancia por defecto configurada para el entorno actual
-import { getLogger } from './Logger';
-import { getConfigForEnvironment } from './config';
+import { getLogger } from './Logger.js';
+import { getConfigForEnvironment } from './config.js';
 
 /**
  * Logger por defecto configurado automáticamente según el entorno

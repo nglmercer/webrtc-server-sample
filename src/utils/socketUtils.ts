@@ -1,8 +1,8 @@
 import { User, Room, CustomSocket } from "../types";
-import { closeOrShiftRoom } from "./roomUtils";
-import pushLogs from "../logger/pushLogs";
-import { logger } from "../logger";
-import { defaultHeartbeatManager } from "../heartbeat";
+import { closeOrShiftRoom } from "./roomUtils.js";
+import pushLogs from "../logger/pushLogs.js";
+import { logger } from "../logger/index.js";
+import { defaultHeartbeatManager } from "../heartbeat/index.js";
 
 export function handleDisconnect(
   socket: CustomSocket,

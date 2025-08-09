@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { CustomSocket } from '../types';
-import { logger } from '../logger';
+import { logger } from '../logger/index.js';
 
 /**
  * Configuración del sistema de heartbeat

@@ -1,7 +1,7 @@
-import { User, Room, CustomSocket } from "../types";
-import { CONST_STRINGS } from "../constants";
-import pushLogs from "../logger/pushLogs";
-import { appendToRoom, closeOrShiftRoom } from "../utils/roomUtils";
+import { User, Room, CustomSocket } from "../types.js";
+import { CONST_STRINGS } from "../constants.js";
+import pushLogs from "../logger/pushLogs.js";
+import { appendToRoom, closeOrShiftRoom } from "../utils/roomUtils.js";
 
 export function registerRoomHandlers(
   socket: CustomSocket,

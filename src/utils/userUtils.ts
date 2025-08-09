@@ -1,5 +1,5 @@
-import { User, CustomSocket } from "../types";
-import pushLogs from "../logger/pushLogs";
+import { User, CustomSocket } from "../types.js";
+import pushLogs from "../logger/pushLogs.js";
 
 export function appendUser(
   socket: CustomSocket,
