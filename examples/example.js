@@ -5,9 +5,7 @@ import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
 import { SignalingServer,defaultLogger as logger,getHeartbeatConfig,defaultHeartbeatManager } from 'webrtc-socket-api'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
-//import { SocketIOLikeSocket,SocketIOLikeServer,defaultLogger } from 'ws-socketio-adapter';
-import pkg from 'ws-socketio-adapter';
-const { SocketIOLikeSocket,SocketIOLikeServer,defaultLogger } = pkg;
+import { SocketIOLikeServer,defaultLogger } from 'ws-socketio-adapter';
 //import { SocketIOLikeSocket } from '../src/adapters/SocketIOLikeSocket';
 //import { defaultLogger as logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
@@ -25,7 +23,7 @@ const app = express();
 const server = createServer(app);
 
 // Obtener configuración de heartbeat por defecto
-const heartbeatConfig = getHeartbeatConfig('production');//process.env.NODE_ENV || 'production'
+//const heartbeatConfig = getHeartbeatConfig('production');//process.env.NODE_ENV || 'production'
 
 // Crear servidor de señalización
 const signalingServer = new SignalingServer({
