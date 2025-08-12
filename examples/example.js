@@ -10,11 +10,8 @@ import { SocketIOLikeSocket,SocketIOLikeServer,defaultLogger } from 'ws-socketio
 //import { defaultLogger as logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
 
-defaultLogger.silence()
-logger.updateConfig({
-  level: 5,
-})
-
+defaultLogger.silence();
+logger.silence();
 // Configuración del servidor
 const defaultConfig = {
   port: parseInt(process.env.PORT || '9001'),
