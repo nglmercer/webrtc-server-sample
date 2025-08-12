@@ -5,7 +5,7 @@ import { ParsedUrlQuery } from 'querystring';
 import * as url from 'url';
 import { nanoid } from 'nanoid';
 import { logger } from '../logger/index.js';
-import { Emitter } from '../Emmiter.js';
+import { Emitter } from '../Emitter.js';
 
 // Interfaz para el usuario conectado
 interface ConnectedUser {
@@ -21,6 +21,11 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
   id: string;
   handshake: {
     query: ParsedUrlQuery;
+  };
+  conn: {
+    transport: {
+      name: string;
+    };
   };
   private ws: WebSocket;
   private isConnected: boolean = true;
@@ -48,6 +53,13 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
       query: parsedUrl.query,
     };
 
+    // Simular conn.transport para compatibilidad con Socket.IO
+    this.conn = {
+      transport: {
+        name: 'websocket'
+      }
+    };
+
     // Configurar broadcast
     this.broadcast = {
       emit: (event: string, ...args: any[]) => {
@@ -71,12 +83,39 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
     this.ws.on('message', (message: RawData) => {
       try {
         const data = JSON.parse(message.toString());
+        logger.debug("data",data)
         if (data.event && Array.isArray(data.payload)) {
           this.lastActivity = Date.now();
+          logger.debug("Mensaje entrante:", data.event,data.payload);
+          
+          // Ignorar eventos de callback-response para evitar bucles
+          if (data.event === 'callback-response') {
+            return;
+          }
+          
+          // Crear función de callback si hay callbackId
+          let callback: Function | undefined;
+          if (data.callbackId) {
+            callback = (...args: any[]) => {
+              // Enviar respuesta del callback directamente al cliente
+              const callbackResponse = {
+                event: 'callback-response',
+                callbackId: data.callbackId,
+                payload: args
+              };
+              if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(JSON.stringify(callbackResponse));
+              }
+            };
+          }
+          
+          // Preparar argumentos incluyendo callback si existe
+          const args = callback ? [...data.payload, callback] : data.payload;
+          
           // Emitir usando el emitter interno
-          this.emitter.emit(data.event, ...data.payload);
+          this.emitter.emit(data.event, ...args);
           // También emitir usando EventEmitter nativo para compatibilidad
-          super.emit(data.event, ...data.payload);
+          super.emit(data.event, ...args);
         }
       } catch (error) {
         logger.error('Error al parsear mensaje de WS:', error);

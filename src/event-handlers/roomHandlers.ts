@@ -2,12 +2,13 @@ import { User, Room, CustomSocket } from "../types.js";
 import { CONST_STRINGS } from "../constants.js";
 import pushLogs from "../logger/pushLogs.js";
 import { appendToRoom, closeOrShiftRoom } from "../utils/roomUtils.js";
+import type {SignalConfig} from "../signal_server.js";
 
 export function registerRoomHandlers(
   socket: CustomSocket,
   listOfRooms: { [key: string]: Room },
   listOfUsers: { [key: string]: User },
-  config: any,
+  config: SignalConfig,
   params: any
 ) {
   let autoCloseEntireSession = params.autoCloseEntireSession === "true";
@@ -15,6 +16,7 @@ export function registerRoomHandlers(
   socket.on("open-room", (arg: any, callback: (success: boolean, error?: string) => void) => {
       callback = callback || function () {};
       closeOrShiftRoom(socket, listOfRooms, listOfUsers, autoCloseEntireSession, config);
+      console.log("open-room",arg)
 
       if (listOfRooms[arg.sessionid]?.participants.length) {
         return callback(false, CONST_STRINGS.ROOM_NOT_AVAILABLE);
@@ -23,7 +25,7 @@ export function registerRoomHandlers(
       listOfUsers[socket.userid].extra = arg.extra;
       autoCloseEntireSession = arg.session?.oneway || arg.session?.broadcast;
 
-      const maxParticipants = parseInt(params.maxParticipantsAllowed || "1000") || 1000;
+      const maxParticipants = parseInt(params.maxParticipantsAllowed || config.maxParticipantsAllowed) || 1000;
       appendToRoom(arg.sessionid, socket.userid, maxParticipants, listOfRooms);
 
       const room = listOfRooms[arg.sessionid];
@@ -54,7 +56,7 @@ export function registerRoomHandlers(
         return callback(false, CONST_STRINGS.ROOM_FULL);
       }
       
-      const maxParticipants = parseInt(params.maxParticipantsAllowed || "1000") || 1000;
+      const maxParticipants = parseInt(params.maxParticipantsAllowed || config.maxParticipantsAllowed) || 1000;
       appendToRoom(arg.sessionid, socket.userid, maxParticipants, listOfRooms);
       socket.admininfo = { sessionid: arg.sessionid, ...arg };
       callback(true);
@@ -62,7 +64,10 @@ export function registerRoomHandlers(
   );
   
   socket.on("check-presence", (roomid: string, callback: (isPresent: boolean, roomid: string, extra: any) => void) => {
-      const room = listOfRooms[roomid];
+    
+    const room = listOfRooms[roomid];
+    console.log("check-presence",{roomid,room,listOfRooms})
+
       if (!room || !room.participants.length) {
           return callback(false, roomid, { _room: { isFull: false, isPasswordProtected: false } });
       }

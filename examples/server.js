@@ -4,12 +4,15 @@ import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer,SocketIOLikeSocket,SocketIOLikeServer,logger,getHeartbeatConfig } from '../dist/index.js'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
-
+import { SignalingServer,logger,getHeartbeatConfig,defaultHeartbeatManager } from '../dist/index.js'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
+import { SocketIOLikeSocket,SocketIOLikeServer,defaultLogger } from 'ws-socketio-adapter';
 //import { SocketIOLikeSocket } from '../src/adapters/SocketIOLikeSocket';
 //import { logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
-
+defaultLogger.updateConfig({
+  level: 4,// 'info' || 1
+  enableConsole: false,
+})
 // Configuración del servidor
 const defaultConfig = {
   port: parseInt(process.env.PORT || '9001'),
@@ -21,13 +24,15 @@ const app = express();
 const server = createServer(app);
 
 // Obtener configuración de heartbeat por defecto
-const heartbeatConfig = getHeartbeatConfig(process.env.NODE_ENV || 'production');
+const heartbeatConfig = getHeartbeatConfig('production');//process.env.NODE_ENV || 'production'
 
 // Crear servidor de señalización
 const signalingServer = new SignalingServer({
   enableHeartbeat: true,
-  heartbeat: heartbeatConfig,
-  maxParticipantsAllowed: defaultConfig.maxParticipants
+  heartbeat: {
+    enableHeartbeat:false,
+  },
+  maxParticipantsAllowed: 999
 });
 
 // Middlewares
@@ -43,7 +48,13 @@ app.use(express.static(path.join(publicPath, 'public')));
 
 
 // Configurar Socket.IO
-const io = new SocketIOLikeServer();
+const io = new SocketIOLikeServer({
+  cors: {
+    origin: defaultConfig.corsOrigin,
+    methods: ['GET', 'POST']
+  },
+  logLevel: 0,
+  transports: ['websocket', 'polling']});
 
 
 io.on('connection', (socket) => {
@@ -52,7 +63,26 @@ io.on('connection', (socket) => {
     transport: socket.conn.transport.name
   });
   signalingServer.handleConnection(socket);
+  socket.on('rooms', (callback) => {
+    if (callback) {
+      callback(signalingServer.getRooms());
+    }
+    return signalingServer.getRooms();
+  });
+  socket.on('GetRooms', (callback) => {
+    if (callback) {
+      callback(signalingServer.getRooms());
+    }
+    return signalingServer.getRooms();
+  });
+  socket.on('GetRoomInfo', (roomId, callback) => {
+    if (callback) {
+      callback(signalingServer.getRoomById(roomId));
+    }
+    return signalingServer.getRoomById(roomId);
+  });
   socket.on('disconnect', (reason) => {
+    defaultHeartbeatManager.cleanupDisconnectedSockets()
     logger.info('Desconexión Socket.IO', {
       socketId: socket.id,
       reason

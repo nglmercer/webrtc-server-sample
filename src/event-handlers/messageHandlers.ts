@@ -1,4 +1,5 @@
 import { User, Room, CustomSocket } from "../types.js";
+import type {SignalConfig} from "../signal_server.js";
 import pushLogs from "../logger/pushLogs.js";
 
 function onMessageCallback(
@@ -6,7 +7,7 @@ function onMessageCallback(
   message: any,
   listOfUsers: { [key: string]: User },
   socketMessageEvent: string,
-  config: any
+  config: SignalConfig
 ) {
   try {
     if (!listOfUsers[message.sender]) {

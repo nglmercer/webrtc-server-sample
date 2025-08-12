@@ -2,12 +2,13 @@ import { User, Room, CustomSocket } from "../types.js";
 import { CONST_STRINGS } from "../constants.js";
 import pushLogs from "../logger/pushLogs.js";
 import { appendUser } from "../utils/userUtils.js";
+import type {SignalConfig} from "../signal_server.js";
 
 export function registerUserHandlers(
   socket: CustomSocket,
   listOfRooms: { [key: string]: Room },
   listOfUsers: { [key: string]: User },
-  config: any,
+  config: SignalConfig,
   params: any
 ) {
   socket.on("extra-data-updated", (extra: any) => {

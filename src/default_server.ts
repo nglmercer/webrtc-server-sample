@@ -17,8 +17,17 @@ export default function signaling_server(socket: ISocket | SocketIOLikeSocket, c
   function onConnection(socket: CustomSocket) {
     let params = socket.handshake.query as any;
 
+    // Función para generar un ID único que no esté en uso
+    const generateUniqueUserId = (): string => {
+      let newId: string;
+      do {
+        newId = nanoid();
+      } while (listOfUsers[newId]);
+      return newId;
+    };
+
     if (!params.userid) {
-      params.userid = nanoid();
+      params.userid = generateUniqueUserId();
     }
     if (!params.sessionid) {
       params.sessionid = nanoid();
@@ -41,7 +50,7 @@ export default function signaling_server(socket: ISocket | SocketIOLikeSocket, c
 
     if (!!listOfUsers[params.userid]) {
       const useridAlreadyTaken = params.userid;
-      params.userid = nanoid;
+      params.userid = generateUniqueUserId();
       socket.emit("userid-already-taken", useridAlreadyTaken, params.userid);
       return;
     }

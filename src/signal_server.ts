@@ -15,17 +15,23 @@ import { logger } from "./logger/index.js";
  * SignalingServer maneja toda la lógica, el estado y las conexiones
  * para un servidor de señalización WebRTC.
  */
+export interface SignalConfig {
+  enableHeartbeat?: boolean;
+  heartbeat?: HeartbeatConfig;
+  maxParticipantsAllowed?: number;
+  [key: string]: any;
+}
 export class SignalingServer {
   private listOfRooms: { [key: string]: Room } = {};
   private listOfUsers: { [key: string]: User } = {};
-  private config: any;
+  private config: SignalConfig;
   private heartbeatEnabled: boolean;
 
   /**
    * Construye una nueva instancia del servidor de señalización.
    * @param {any} config - Opciones de configuración para el servidor.
    */
-  constructor(config: any = {}) {
+  constructor(config: SignalConfig = {}) {
     this.config = config;
     this.heartbeatEnabled = config.enableHeartbeat !== false; // Por defecto habilitado
     
@@ -49,9 +55,18 @@ export class SignalingServer {
 
     let params = customSocket.handshake.query as any;
 
+    // Función para generar un ID único que no esté en uso
+    const generateUniqueUserId = (): string => {
+      let newId: string;
+      do {
+        newId = nanoid();
+      } while (this.listOfUsers[newId]);
+      return newId;
+    };
+
     // --- Inicialización y validación de parámetros ---
     if (!params.userid) {
-      params.userid = nanoid();
+      params.userid = generateUniqueUserId();
     }
     if (!params.sessionid) {
       params.sessionid = nanoid();
@@ -74,7 +89,7 @@ export class SignalingServer {
     // --- Verificación de usuario existente ---
     if (!!this.listOfUsers[params.userid]) {
       const useridAlreadyTaken = params.userid;
-      params.userid = nanoid();
+      params.userid = generateUniqueUserId();
       customSocket.emit("userid-already-taken", useridAlreadyTaken, params.userid);
       // No continuamos la conexión con el ID antiguo. El cliente debe reintentar con el nuevo.
       return customSocket;
