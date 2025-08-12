@@ -4,13 +4,13 @@ import { Server as SocketIOServer } from 'socket.io';
 import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import path from 'path';
-import { SignalingServer,defaultLogger as logger,getHeartbeatConfig,defaultHeartbeatManager } from 'webrtc-socket-api'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
-import { SocketIOLikeServer,defaultLogger } from 'ws-socketio-adapter';
+import { SignalingServer,defaultLogger as logger,getHeartbeatConfig,SocketIOLikeServer } from 'webrtc-socket-api'; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
+//import { defaultLogger } from 'ws-socketio-adapter';
 //import { SocketIOLikeSocket } from '../src/adapters/SocketIOLikeSocket';
 //import { defaultLogger as logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
 
-defaultLogger.silence();
+//defaultLogger.silence();
 logger.silence();
 // Configuración del servidor
 const defaultConfig = {
@@ -80,7 +80,6 @@ io.on('connection', (socket) => {
     return signalingServer.getRoomById(roomId);
   });
   socket.on('disconnect', (reason) => {
-    defaultHeartbeatManager.cleanupDisconnectedSockets()
     logger.info('Desconexión Socket.IO', {
       socketId: socket.id,
       reason
