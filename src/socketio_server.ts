@@ -1,5 +1,5 @@
 import { wsio, SocketIOLikeSocket } from './adapters/SocketIOLikeAdapter.js';
-import { logger } from './logger/index.js';
+import { defaultLogger as logger } from './logger/index.js';
 
 // Configurar eventos del servidor
 wsio.on('connection', (socket: SocketIOLikeSocket) => {

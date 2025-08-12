@@ -11,7 +11,6 @@ export const HeartbeatConfigs = {
     pingInterval: 15000,    // 15 segundos
     pongTimeout: 5000,      // 5 segundos
     maxFailedPings: 2,      // 2 intentos fallidos
-    enableLogging: true     // Logging habilitado
   } as HeartbeatConfig,
 
   /**
@@ -21,7 +20,6 @@ export const HeartbeatConfigs = {
     pingInterval: 60000,    // 60 segundos
     pongTimeout: 10000,     // 10 segundos
     maxFailedPings: 3,      // 3 intentos fallidos
-    enableLogging: false    // Logging deshabilitado
   } as HeartbeatConfig,
 
   /**
@@ -31,7 +29,6 @@ export const HeartbeatConfigs = {
     pingInterval: 10000,    // 10 segundos
     pongTimeout: 3000,      // 3 segundos
     maxFailedPings: 2,      // 2 intentos fallidos
-    enableLogging: true     // Logging habilitado
   } as HeartbeatConfig,
 
   /**
@@ -41,7 +38,6 @@ export const HeartbeatConfigs = {
     pingInterval: 60000,    // 60 segundos
     pongTimeout: 15000,     // 15 segundos
     maxFailedPings: 5,      // 5 intentos fallidos
-    enableLogging: false    // Logging deshabilitado
   } as HeartbeatConfig,
 
   /**
@@ -51,7 +47,6 @@ export const HeartbeatConfigs = {
     pingInterval: 5000,     // 5 segundos
     pongTimeout: 2000,      // 2 segundos
     maxFailedPings: 1,      // 1 intento fallido
-    enableLogging: true     // Logging habilitado
   } as HeartbeatConfig
 };
 
@@ -134,10 +129,6 @@ export function getHeartbeatConfigFromEnv(): Partial<HeartbeatConfig> {
 
   if (process.env.HEARTBEAT_MAX_FAILED_PINGS) {
     config.maxFailedPings = parseInt(process.env.HEARTBEAT_MAX_FAILED_PINGS, 10);
-  }
-
-  if (process.env.HEARTBEAT_ENABLE_LOGGING) {
-    config.enableLogging = process.env.HEARTBEAT_ENABLE_LOGGING.toLowerCase() === 'true';
   }
 
   return config;

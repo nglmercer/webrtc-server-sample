@@ -6,6 +6,7 @@ interface ISocket {
     handshake: {
         query: ParsedUrlQuery;
     };
+    off(event: string, callback: (...args: any[]) => void): this;
     on(event: string, callback: (...args: any[]) => void): this;
     emit(event: string, ...args: any[]): boolean;
     broadcast: {

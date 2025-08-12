@@ -17,11 +17,12 @@ export function pushLogs(config: any, log_event: string, log_data: any): void {
   if (log_data instanceof Error) {
     logger.error(log_event, log_data.message, log_data);
   } else if (typeof log_data === 'string' && log_data.toLowerCase().includes('warn')) {
-    logger.warn(log_event, log_data);
+    logger.warn(log_event, { message: log_data });
   } else if (typeof log_data === 'string' && log_data.toLowerCase().includes('error')) {
-    logger.error(log_event, log_data);
+    logger.error(log_event, { message: log_data });
   } else {
-    logger.info(log_event, typeof log_data === 'string' ? log_data : 'Event logged', log_data);
+    logger.info(log_event, { message: log_data });
+
   }
 }
 
@@ -45,19 +46,19 @@ export function pushLogsWithLevel(
   
   switch (level) {
     case 'debug':
-      logger.debug(event, message, data, context);
+      logger.debug(event,{ message, data, context});
       break;
     case 'info':
-      logger.info(event, message, data, context);
+      logger.info(event,{ message, data, context});
       break;
     case 'warn':
-      logger.warn(event, message, data, context);
+      logger.warn(event,{ message, data, context});
       break;
     case 'error':
-      logger.error(event, message, data, context);
+      logger.error(event,{ message, data, context});
       break;
     case 'fatal':
-      logger.fatal(event, message, data, context);
+      logger.fatal(event,{ message, data, context});
       break;
   }
 }

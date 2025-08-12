@@ -9,14 +9,13 @@ import { registerMessageHandlers } from "./event-handlers/messageHandlers.js";
 import { SocketIOLikeSocket } from "./adapters/SocketIOLikeAdapter.js";
 import { nanoid } from 'nanoid';
 import { defaultHeartbeatManager, HeartbeatConfig, getHeartbeatConfig } from "./heartbeat/index.js";
-import { logger } from "./logger/index.js";
+import { defaultLogger as logger  } from "./logger/index.js";
 
 /**
  * SignalingServer maneja toda la lógica, el estado y las conexiones
  * para un servidor de señalización WebRTC.
  */
 export interface SignalConfig {
-  enableHeartbeat?: boolean;
   heartbeat?: HeartbeatConfig;
   maxParticipantsAllowed?: number;
   [key: string]: any;
@@ -25,7 +24,6 @@ export class SignalingServer {
   private listOfRooms: { [key: string]: Room } = {};
   private listOfUsers: { [key: string]: User } = {};
   private config: SignalConfig;
-  private heartbeatEnabled: boolean;
 
   /**
    * Construye una nueva instancia del servidor de señalización.
@@ -33,15 +31,14 @@ export class SignalingServer {
    */
   constructor(config: SignalConfig = {}) {
     this.config = config;
-    this.heartbeatEnabled = config.enableHeartbeat !== false; // Por defecto habilitado
     
     // Configurar heartbeat si está habilitado
-    if (this.heartbeatEnabled) {
+    if (this.config.heartbeat) {
       this.setupHeartbeatManager(config.heartbeat);
     }
     
     logger.info("SignalingServer instance created", {
-      data: this.heartbeatEnabled,
+      data: this.config.heartbeat,
     });
   }
 
@@ -105,7 +102,7 @@ export class SignalingServer {
     registerMessageHandlers(customSocket, this.listOfRooms, this.listOfUsers, socketMessageEvent, this.config);
 
     // Configurar heartbeat si está habilitado
-    if (this.heartbeatEnabled) {
+    if (this.config.heartbeat) {
       setupHeartbeat(customSocket, this.config);
     }
 
@@ -162,14 +159,13 @@ export class SignalingServer {
       defaultHeartbeatManager.on('ping-timeout', (socketId, failedCount) => {
         logger.debug(`Ping timeout para socket ${socketId}, intentos fallidos: ${failedCount}`,{data:finalConfig});
       });
-      
+      defaultHeartbeatManager.config = finalConfig;
       // Iniciar el heartbeat manager
-      defaultHeartbeatManager.start(finalConfig);
+      defaultHeartbeatManager.start();
       
       logger.info('HeartbeatManager configurado y iniciado', { config: finalConfig });
     } catch (error) {
       logger.error('Error configurando HeartbeatManager:', error);
-      this.heartbeatEnabled = false;
     }
   }
 
@@ -258,7 +254,7 @@ export class SignalingServer {
     const stats = {
       totalUsers: Object.keys(this.listOfUsers).length,
       totalRooms: Object.keys(this.listOfRooms).length,
-      heartbeatEnabled: this.heartbeatEnabled,
+      heartbeatEnabled: this.config.heartbeat,
       connections: [] as any[]
     };
 
@@ -282,7 +278,7 @@ export class SignalingServer {
    * @returns {Object} Estado del heartbeat manager.
    */
   public getHeartbeatStatus(): any {
-    if (!this.heartbeatEnabled) {
+    if (!this.config.heartbeat) {
       return { enabled: false, message: 'Heartbeat disabled' };
     }
 
@@ -298,7 +294,7 @@ export class SignalingServer {
    * Detiene el HeartbeatManager.
    */
   public stopHeartbeat(): void {
-    if (this.heartbeatEnabled) {
+    if (this.config.heartbeat) {
       defaultHeartbeatManager.stop();
       logger.info('HeartbeatManager detenido',{});
     }
@@ -308,7 +304,7 @@ export class SignalingServer {
    * Reinicia el HeartbeatManager.
    */
   public restartHeartbeat(): void {
-    if (this.heartbeatEnabled) {
+    if (this.config.heartbeat) {
       defaultHeartbeatManager.stop();
       defaultHeartbeatManager.start();
       logger.info('HeartbeatManager reiniciado',{});

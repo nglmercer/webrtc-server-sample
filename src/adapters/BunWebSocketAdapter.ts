@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import { type ISocket } from '../types';
 import { ParsedUrlQuery } from 'querystring';
 import { nanoid } from 'nanoid';
-import { logger } from '../logger/index.js';
+import { defaultLogger as logger } from '../logger/index.js';
 
 /**
  * Adaptador para WebSocket nativo de Bun

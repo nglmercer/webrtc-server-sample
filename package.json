@@ -41,7 +41,7 @@
     "socket.io": "^4.7.2",
     "webrtc-socket-api": "^1.0.8",
     "ws": "^8.14.2",
-    "ws-socketio-adapter": "^1.0.4"
+    "ws-socketio-adapter": "^1.0.6"
   },
   "files": [
     "dist",

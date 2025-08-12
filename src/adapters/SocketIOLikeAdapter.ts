@@ -4,7 +4,7 @@ import { type ISocket, CustomSocket } from '../types';
 import { ParsedUrlQuery } from 'querystring';
 import * as url from 'url';
 import { nanoid } from 'nanoid';
-import { logger } from '../logger/index.js';
+import { defaultLogger as logger } from '../logger/index.js';
 import { Emitter } from '../Emitter.js';
 
 // Interfaz para el usuario conectado
@@ -83,10 +83,10 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
     this.ws.on('message', (message: RawData) => {
       try {
         const data = JSON.parse(message.toString());
-        logger.debug("data",data)
+        //logger.debug("data",data)
         if (data.event && Array.isArray(data.payload)) {
           this.lastActivity = Date.now();
-          logger.debug("Mensaje entrante:", data.event,data.payload);
+          //logger.debug("Mensaje entrante:", data.event,data.payload);
           
           // Ignorar eventos de callback-response para evitar bucles
           if (data.event === 'callback-response') {

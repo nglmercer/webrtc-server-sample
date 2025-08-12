@@ -5,7 +5,7 @@ import cors from 'cors';
 import path from 'path';
 import { SignalingServer,logger,getHeartbeatConfig,BunWebSocketAdapter } from 'webrtc-socket-api';
 //import { BunWebSocketAdapter } from '../src/adapters/BunWebSocketAdapter';
-//import { logger } from '../src/logger';
+//import { defaultLogger as logger } from '../src/logger';
 //import { getHeartbeatConfig } from '../src/heartbeat';
 
 // Configuración del servidor
