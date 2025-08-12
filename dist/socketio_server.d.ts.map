@@ -1,0 +1,1 @@
+{"version":3,"file":"socketio_server.d.ts","sourceRoot":"","sources":["../src/socketio_server.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,IAAI,EAAsB,MAAM,mCAAmC,CAAC;AAoL7E,wBAAgB,mBAAmB,CAAC,IAAI,GAAE,MAAa,GAAG,IAAI,CAe7D;AAGD,wBAAgB,kBAAkB,IAAI,IAAI,CAIzC;AAGD,OAAO,EAAE,IAAI,EAAE,CAAC"}
