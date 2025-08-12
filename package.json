@@ -1,6 +1,6 @@
 {
   "name": "webrtc-socket-api",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "WebRTC API with Socket.IO signaling",
   "main": "dist/index.js",
   "type": "module",
