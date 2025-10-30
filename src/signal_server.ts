@@ -1,15 +1,24 @@
 import pushLogs from "./logger/pushLogs.js";
 import { CONST_STRINGS } from "./constants.js";
-import type{ User, Room, CustomSocket, ISocket } from "./types.js";
+import type { User, Room, CustomSocket, ISocket } from "./types.js";
 import { appendUser } from "./utils/userUtils.js";
-import { handleDisconnect, setupHeartbeat, getSocketStats, isSocketConnected } from "./utils/socketUtils.js";
+import {
+  handleDisconnect,
+  setupHeartbeat,
+  getSocketStats,
+  isSocketConnected,
+} from "./utils/socketUtils.js";
 import { registerRoomHandlers } from "./event-handlers/roomHandlers.js";
 import { registerUserHandlers } from "./event-handlers/userHandlers.js";
 import { registerMessageHandlers } from "./event-handlers/messageHandlers.js";
 import { SocketIOLikeSocket } from "./adapters/SocketIOLikeAdapter.js";
-import { nanoid } from 'nanoid';
-import { defaultHeartbeatManager, HeartbeatConfig, getHeartbeatConfig } from "./heartbeat/index.js";
-import { defaultLogger as logger  } from "./logger/index.js";
+import { nanoid } from "nanoid";
+import {
+  defaultHeartbeatManager,
+  HeartbeatConfig,
+  getHeartbeatConfig,
+} from "./heartbeat/index.js";
+import { defaultLogger as logger } from "./logger/index.js";
 
 /**
  * SignalingServer maneja toda la lógica, el estado y las conexiones
@@ -31,12 +40,12 @@ export class SignalingServer {
    */
   constructor(config: SignalConfig = {}) {
     this.config = config;
-    
+
     // Configurar heartbeat si está habilitado
     if (this.config.heartbeat) {
       this.setupHeartbeatManager(config.heartbeat);
     }
-    
+
     logger.info("SignalingServer instance created", {
       data: this.config.heartbeat,
     });
@@ -78,16 +87,21 @@ export class SignalingServer {
       params.extra = {};
     }
 
-    const socketMessageEvent = (params.msgEvent as string) || "RTCMultiConnection-Message";
+    const socketMessageEvent =
+      (params.msgEvent as string) || "RTCMultiConnection-Message";
     (params as any).socketMessageEvent = socketMessageEvent;
-    
+
     const autoCloseEntireSession = params.autoCloseEntireSession === "true";
 
     // --- Verificación de usuario existente ---
     if (!!this.listOfUsers[params.userid]) {
       const useridAlreadyTaken = params.userid;
       params.userid = generateUniqueUserId();
-      customSocket.emit("userid-already-taken", useridAlreadyTaken, params.userid);
+      customSocket.emit(
+        "userid-already-taken",
+        useridAlreadyTaken,
+        params.userid,
+      );
       // No continuamos la conexión con el ID antiguo. El cliente debe reintentar con el nuevo.
       return customSocket;
     }
@@ -96,10 +110,33 @@ export class SignalingServer {
     customSocket.userid = params.userid;
     appendUser(customSocket, params, this.listOfUsers, this.config);
 
+    // Clear existing event handlers before registering new ones
+    if ((customSocket as any).clearEventHandlers) {
+      (customSocket as any).clearEventHandlers();
+    }
+
     // Registrar todos los manejadores de eventos, pasando el estado de la instancia
-    registerRoomHandlers(customSocket, this.listOfRooms, this.listOfUsers, this.config, params);
-    registerUserHandlers(customSocket, this.listOfRooms, this.listOfUsers, this.config, params);
-    registerMessageHandlers(customSocket, this.listOfRooms, this.listOfUsers, socketMessageEvent, this.config);
+    registerRoomHandlers(
+      customSocket,
+      this.listOfRooms,
+      this.listOfUsers,
+      this.config,
+      params,
+    );
+    registerUserHandlers(
+      customSocket,
+      this.listOfRooms,
+      this.listOfUsers,
+      this.config,
+      params,
+    );
+    registerMessageHandlers(
+      customSocket,
+      this.listOfRooms,
+      this.listOfUsers,
+      socketMessageEvent,
+      this.config,
+    );
 
     // Configurar heartbeat si está habilitado
     if (this.config.heartbeat) {
@@ -114,14 +151,14 @@ export class SignalingServer {
         this.listOfRooms,
         this.listOfUsers,
         autoCloseEntireSession,
-        this.config
-      )
+        this.config,
+      ),
     );
-    
+
     logger.info(`User connected: ${customSocket.userid}`, {
       socketId: customSocket.id,
     });
-    
+
     return customSocket;
   }
 
@@ -130,42 +167,49 @@ export class SignalingServer {
   /**
    * Configura el gestor de heartbeat
    */
-  private setupHeartbeatManager(heartbeatConfig?: Partial<HeartbeatConfig>): void {
+  private setupHeartbeatManager(
+    heartbeatConfig?: Partial<HeartbeatConfig>,
+  ): void {
     try {
       // Usar configuración del entorno si está disponible
-      const envConfig = process.env.NODE_ENV ? getHeartbeatConfig(
-        process.env.NODE_ENV as any
-      ) : getHeartbeatConfig('production');
-      
+      const envConfig = process.env.NODE_ENV
+        ? getHeartbeatConfig(process.env.NODE_ENV as any)
+        : getHeartbeatConfig("production");
+
       const finalConfig = {
         ...envConfig,
-        ...heartbeatConfig
+        ...heartbeatConfig,
       };
-      
+
       // Configurar eventos del heartbeat manager
-      defaultHeartbeatManager.on('connection-lost', (socketId, socket) => {
+      defaultHeartbeatManager.on("connection-lost", (socketId, socket) => {
         logger.warn(`Conexión perdida detectada para socket ${socketId}`, {
           socketId,
         });
         // El socket ya será desconectado automáticamente por el HeartbeatManager
       });
-      
-      defaultHeartbeatManager.on('connection-restored', (socketId, socket) => {
+
+      defaultHeartbeatManager.on("connection-restored", (socketId, socket) => {
         logger.info(`Conexión restaurada para socket ${socketId}`, {
           socketId,
         });
       });
-      
-      defaultHeartbeatManager.on('ping-timeout', (socketId, failedCount) => {
-        logger.debug(`Ping timeout para socket ${socketId}, intentos fallidos: ${failedCount}`,{data:finalConfig});
+
+      defaultHeartbeatManager.on("ping-timeout", (socketId, failedCount) => {
+        logger.debug(
+          `Ping timeout para socket ${socketId}, intentos fallidos: ${failedCount}`,
+          { data: finalConfig },
+        );
       });
       defaultHeartbeatManager.config = finalConfig;
       // Iniciar el heartbeat manager
       defaultHeartbeatManager.start();
-      
-      logger.info('HeartbeatManager configurado y iniciado', { config: finalConfig });
+
+      logger.info("HeartbeatManager configurado y iniciado", {
+        config: finalConfig,
+      });
     } catch (error) {
-      logger.error('Error configurando HeartbeatManager:', error);
+      logger.error("Error configurando HeartbeatManager:", error);
     }
   }
 
@@ -178,20 +222,47 @@ export class SignalingServer {
   }
 
   /**
+   * Obtiene los detalles de una sala específica por su ID.
+   * @param {string} roomId - El ID de la sala a buscar.
+   * @returns {Room | undefined} El objeto de la sala o undefined si no se encuentra.
+   */
+  public getRoom(roomId: string): Room | undefined {
+    return this.listOfRooms[roomId];
+  }
+
+  /**
+   * Verifica si existe una sala específica.
+   * @param {string} roomId - El ID de la sala a verificar.
+   * @returns {boolean} True si la sala existe, false en caso contrario.
+   */
+  public roomExists(roomId: string): boolean {
+    return roomId in this.listOfRooms;
+  }
+
+  /**
+   * Verifica si existe un usuario específico.
+   * @param {string} userId - El ID del usuario a verificar.
+   * @returns {boolean} True si el usuario existe, false en caso contrario.
+   */
+  public userExists(userId: string): boolean {
+    return userId in this.listOfUsers;
+  }
+
+  /**
    * Obtiene una copia de la lista de todos los usuarios conectados.
    * @returns {{ [key: string]: User }} Un objeto con todos los usuarios.
    */
   public getUsers(): { [key: string]: User } {
     return { ...this.listOfUsers };
   }
-  
+
   /**
    * Obtiene los detalles de una sala específica por su ID.
    * @param {string} roomId - El ID de la sala a buscar.
    * @returns {Room | undefined} El objeto de la sala o undefined si no se encuentra.
    */
   public getRoomById(roomId: string): Room | undefined {
-      return this.listOfRooms[roomId];
+    return this.listOfRooms[roomId];
   }
 
   /**
@@ -200,7 +271,16 @@ export class SignalingServer {
    * @returns {User | undefined} El objeto del usuario o undefined si no se encuentra.
    */
   public getUserById(userId: string): User | undefined {
-      return this.listOfUsers[userId];
+    return this.listOfUsers[userId];
+  }
+
+  /**
+   * Obtiene los detalles de un usuario específico por su ID (alias de getUserById).
+   * @param {string} userId - El ID del usuario a buscar.
+   * @returns {User | undefined} El objeto del usuario o undefined si no se encuentra.
+   */
+  public getUser(userId: string): User | undefined {
+    return this.listOfUsers[userId];
   }
 
   /**
@@ -212,7 +292,10 @@ export class SignalingServer {
     const user = this.listOfUsers[userId];
     if (user) {
       console.log(`Kicking user: ${userId}`);
-      user.socket.emit('kicked-by-admin', 'Has sido desconectado por un administrador.');
+      user.socket.emit(
+        "kicked-by-admin",
+        "Has sido desconectado por un administrador.",
+      );
       user.socket.disconnect(true); // El evento 'disconnect' se encargará de la limpieza.
       return true;
     }
@@ -228,19 +311,23 @@ export class SignalingServer {
   public closeRoom(roomId: string): boolean {
     const room = this.listOfRooms[roomId];
     if (room) {
-        console.log(`Closing room by admin: ${roomId}`);
-        // Notificar y desconectar a cada participante
-        room.participants.forEach(userId => {
-            const user = this.listOfUsers[userId];
-            if (user) {
-                user.socket.emit('room-closed-by-admin', roomId, 'La sala ha sido cerrada por un administrador.');
-                user.socket.disconnect(true);
-            }
-        });
-        // El evento 'disconnect' de cada socket limpiará a los usuarios.
-        // Finalmente, eliminamos la sala.
-        delete this.listOfRooms[roomId];
-        return true;
+      console.log(`Closing room by admin: ${roomId}`);
+      // Notificar y desconectar a cada participante
+      room.participants.forEach((userId) => {
+        const user = this.listOfUsers[userId];
+        if (user) {
+          user.socket.emit(
+            "room-closed-by-admin",
+            roomId,
+            "La sala ha sido cerrada por un administrador.",
+          );
+          user.socket.disconnect(true);
+        }
+      });
+      // El evento 'disconnect' de cada socket limpiará a los usuarios.
+      // Finalmente, eliminamos la sala.
+      delete this.listOfRooms[roomId];
+      return true;
     }
     console.warn(`Attempted to close non-existent room: ${roomId}`);
     return false;
@@ -255,17 +342,17 @@ export class SignalingServer {
       totalUsers: Object.keys(this.listOfUsers).length,
       totalRooms: Object.keys(this.listOfRooms).length,
       heartbeatEnabled: this.config.heartbeat,
-      connections: [] as any[]
+      connections: [] as any[],
     };
 
     // Obtener estadísticas de cada usuario conectado
-    Object.values(this.listOfUsers).forEach(user => {
+    Object.values(this.listOfUsers).forEach((user) => {
       if (user.socket) {
         const socketStats = getSocketStats(user.socket);
         stats.connections.push({
           userId: user.userid,
           socketId: user.socket.id,
-          ...socketStats
+          ...socketStats,
         });
       }
     });
@@ -279,14 +366,14 @@ export class SignalingServer {
    */
   public getHeartbeatStatus(): any {
     if (!this.config.heartbeat) {
-      return { enabled: false, message: 'Heartbeat disabled' };
+      return { enabled: false, message: "Heartbeat disabled" };
     }
 
     return {
       enabled: true,
       isRunning: defaultHeartbeatManager.isRunning,
       activeSockets: defaultHeartbeatManager.sockets.size,
-      config: defaultHeartbeatManager.config
+      config: defaultHeartbeatManager.config,
     };
   }
 
@@ -296,7 +383,7 @@ export class SignalingServer {
   public stopHeartbeat(): void {
     if (this.config.heartbeat) {
       defaultHeartbeatManager.stop();
-      logger.info('HeartbeatManager detenido',{});
+      logger.info("HeartbeatManager detenido", {});
     }
   }
 
@@ -307,7 +394,7 @@ export class SignalingServer {
     if (this.config.heartbeat) {
       defaultHeartbeatManager.stop();
       defaultHeartbeatManager.start();
-      logger.info('HeartbeatManager reiniciado',{});
+      logger.info("HeartbeatManager reiniciado", {});
     }
   }
 }

@@ -5,8 +5,8 @@ export function appendToRoom(
   roomid: string,
   userid: string,
   maxParticipants: number,
-  listOfRooms: { [key: string]: Room }
-) {
+  listOfRooms: { [key: string]: Room },
+): boolean {
   if (!listOfRooms[roomid]) {
     listOfRooms[roomid] = {
       maxParticipantsAllowed: maxParticipants,
@@ -21,13 +21,25 @@ export function appendToRoom(
         video: true,
       },
       createdAt: new Date(),
-      maxUsers: maxParticipants
+      maxUsers: maxParticipants,
     };
+    return true;
+  }
+
+  // Check if room is already full
+  if (
+    listOfRooms[roomid].participants.length >=
+    listOfRooms[roomid].maxParticipantsAllowed
+  ) {
+    return false;
   }
 
   if (listOfRooms[roomid].participants.indexOf(userid) === -1) {
     listOfRooms[roomid].participants.push(userid);
+    return true;
   }
+
+  return true;
 }
 
 export function closeOrShiftRoom(
@@ -35,28 +47,34 @@ export function closeOrShiftRoom(
   listOfRooms: { [key: string]: Room },
   listOfUsers: { [key: string]: User },
   autoCloseEntireSession: boolean,
-  config: any
+  config: any,
 ) {
   try {
     if (!socket.admininfo) {
       return;
     }
-    
+
     const roomid = socket.admininfo.sessionid;
-    if (!roomid || !listOfRooms[roomid]) {
-      return; // Si no hay roomid o el room no existe, salir temprano
+    if (!roomid) {
+      return; // Si no hay roomid, salir temprano
+    }
+
+    if (!listOfRooms[roomid]) {
+      // Clear the admininfo if room doesn't exist
+      socket.admininfo = null;
+      return; // Si el room no existe, salir temprano
     }
 
     const room = listOfRooms[roomid];
-    
+
     // Si el socket es el owner del room
     if (socket.userid === room.owner) {
       if (!autoCloseEntireSession && room.participants.length > 1) {
         // Buscar un nuevo owner
         const newOwner = room.participants.find(
-          (pid) => pid !== socket.userid && listOfUsers[pid]
+          (pid) => pid !== socket.userid && listOfUsers[pid],
         );
-        
+
         if (newOwner && listOfUsers[newOwner]) {
           room.owner = newOwner;
           listOfUsers[newOwner].socket.emit("set-isInitiator-true", roomid);
@@ -75,10 +93,10 @@ export function closeOrShiftRoom(
     // Verificar nuevamente si el room todavía existe antes de modificar participantes
     if (listOfRooms[roomid]) {
       const newParticipantsList = listOfRooms[roomid].participants.filter(
-        (pid) => pid !== socket.userid
+        (pid) => pid !== socket.userid,
       );
       listOfRooms[roomid].participants = newParticipantsList;
-      
+
       // Si no quedan participantes, eliminar el room
       if (listOfRooms[roomid].participants.length === 0) {
         delete listOfRooms[roomid];

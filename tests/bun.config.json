@@ -1,0 +1,1 @@
+{"test": {"match": ["**/*.test.{ts,tsx}"], "testEnvironment": "node", "moduleType": "module"}}

@@ -5,7 +5,7 @@ export function appendUser(
   socket: CustomSocket,
   params: any,
   listOfUsers: { [key: string]: User },
-  config: any
+  config: any,
 ) {
   try {
     let extra = params.extra;
@@ -29,7 +29,7 @@ export function appendUser(
       socketMessageEvent: params.socketMessageEvent || "",
       socketCustomEvent: params.socketCustomEvent || "",
       connectedAt: new Date(),
-      roomid: params.sessionid || undefined
+      roomid: undefined,
     };
   } catch (e) {
     pushLogs(config, "appendUser", e);

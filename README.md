@@ -45,6 +45,24 @@ npm i -D @types/express @types/node
 - **Native WebSocket** implementation with built-in pub/sub
 - **Lower memory usage** and faster startup times
 
+### Building with Bun
+
+The project includes optimized Bun build scripts:
+
+```bash
+# Build TypeScript first, then bundle with Bun
+npm run bun:build
+
+# Build and run the production bundle
+npm run bun:build && npm run bun:start
+
+# Development with hot reload
+npm run bun:dev
+
+# Build and run in one command
+npm run bun:dev:start
+```
+
 ### Quick Start with Bun
 
 ```bash
