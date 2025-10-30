@@ -1,11 +1,11 @@
-import { EventEmitter } from 'events';
-import { RawData, WebSocket, WebSocketServer } from 'ws';
-import { type ISocket, CustomSocket } from '../types';
-import { ParsedUrlQuery } from 'querystring';
-import * as url from 'url';
-import { nanoid } from 'nanoid';
-import { defaultLogger as logger } from '../logger/index.js';
-import { Emitter } from '../Emitter.js';
+import { EventEmitter } from "events";
+import { RawData, WebSocket, WebSocketServer } from "ws";
+import { type ISocket, CustomSocket } from "../types";
+import { ParsedUrlQuery } from "querystring";
+import * as url from "url";
+import { nanoid } from "nanoid";
+import { defaultLogger as logger } from "../logger/index.js";
+import { Emitter } from "../Emitter.js";
 
 // Interfaz para el usuario conectado
 interface ConnectedUser {
@@ -34,8 +34,8 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
   private emitter: Emitter;
   private rooms: Set<string> = new Set();
   private server: SocketIOLikeServer;
-  
-  broadcast: { 
+
+  broadcast: {
     emit: (event: string, ...args: any[]) => void;
     to: (room: string) => { emit: (event: string, ...args: any[]) => void };
   };
@@ -46,9 +46,9 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
     this.id = nanoid();
     this.server = server;
     this.emitter = new Emitter();
-    
+
     // Extraer query params
-    const parsedUrl = url.parse(request.url || '', true);
+    const parsedUrl = url.parse(request.url || "", true);
     this.handshake = {
       query: parsedUrl.query,
     };
@@ -56,8 +56,8 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
     // Simular conn.transport para compatibilidad con Socket.IO
     this.conn = {
       transport: {
-        name: 'websocket'
-      }
+        name: "websocket",
+      },
     };
 
     // Configurar broadcast
@@ -68,98 +68,98 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
       to: (room: string) => ({
         emit: (event: string, ...args: any[]) => {
           this.server.broadcastToRoom(room, event, args, this.id);
-        }
-      })
+        },
+      }),
     };
 
     this.setupWebSocketListeners();
-    
+
     // Registrar usuario en el servidor
     this.server.registerUser(this);
   }
 
   private setupWebSocketListeners(): void {
     // Manejar mensajes entrantes
-    this.ws.on('message', (message: RawData) => {
+    this.ws.on("message", (message: RawData) => {
       try {
         const data = JSON.parse(message.toString());
         //logger.debug("data",data)
         if (data.event && Array.isArray(data.payload)) {
           this.lastActivity = Date.now();
           //logger.debug("Mensaje entrante:", data.event,data.payload);
-          
+
           // Ignorar eventos de callback-response para evitar bucles
-          if (data.event === 'callback-response') {
+          if (data.event === "callback-response") {
             return;
           }
-          
+
           // Crear función de callback si hay callbackId
           let callback: Function | undefined;
           if (data.callbackId) {
             callback = (...args: any[]) => {
               // Enviar respuesta del callback directamente al cliente
               const callbackResponse = {
-                event: 'callback-response',
+                event: "callback-response",
                 callbackId: data.callbackId,
-                payload: args
+                payload: args,
               };
               if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
                 this.ws.send(JSON.stringify(callbackResponse));
               }
             };
           }
-          
+
           // Preparar argumentos incluyendo callback si existe
           const args = callback ? [...data.payload, callback] : data.payload;
-          
+
           // Emitir usando el emitter interno
           this.emitter.emit(data.event, ...args);
           // También emitir usando EventEmitter nativo para compatibilidad
           super.emit(data.event, ...args);
         }
       } catch (error) {
-        logger.error('Error al parsear mensaje de WS:', error);
+        logger.error("Error al parsear mensaje de WS:", error);
       }
     });
 
     // Manejar desconexión
-    this.ws.on('close', (code: number, reason: Buffer) => {
+    this.ws.on("close", (code: number, reason: Buffer) => {
       this.isConnected = false;
       const reasonString = reason.toString();
       logger.info(`WebSocket ${this.id} cerrado`, {
         code,
         reason: reasonString,
-        duration: Date.now() - this.connectionStartTime
+        duration: Date.now() - this.connectionStartTime,
       });
-      
+
       // Limpiar del servidor
       this.server.unregisterUser(this.id);
-      
+
       // Emitir evento de desconexión
-      this.emitter.emit('disconnect', {code, reasonString});
-      super.emit('disconnect', {code, reasonString});
+      this.emitter.emit("disconnect", { code, reasonString });
+      super.emit("disconnect", { code, reasonString });
     });
 
-    this.ws.on('error', (err: Error) => {
+    this.ws.on("error", (err: Error) => {
       this.isConnected = false;
       logger.error(`Error en WebSocket ${this.id}:`, err);
       this.server.unregisterUser(this.id);
-      this.emitter.emit('disconnect');
-      super.emit('disconnect');
+      this.emitter.emit("disconnect");
+      super.emit("disconnect");
     });
 
     // Manejar ping/pong
-    this.ws.on('ping', (data: Buffer) => {
+    this.ws.on("ping", (data: Buffer) => {
       this.lastActivity = Date.now();
       if (this.isConnected) {
         this.ws.pong(data);
       }
     });
 
-    this.ws.on('pong', (data: Buffer) => {
+    this.ws.on("pong", (data: Buffer) => {
       this.lastActivity = Date.now();
-      this.emitter.emit('pong', data);
-      super.emit('pong', data);
+      this.emitter.emit("pong", data);
+      super.emit("pong", data);
     });
   }
 
@@ -188,14 +188,16 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
   // Método emit para enviar datos al cliente
   emit(event: string, ...args: any[]): boolean {
     if (!this.isConnected || this.ws.readyState !== WebSocket.OPEN) {
-      logger.warn(`Intento de envío a WebSocket ${this.id} desconectado`, { data: event });
+      logger.warn(`Intento de envío a WebSocket ${this.id} desconectado`, {
+        data: event,
+      });
       return false;
     }
 
     try {
       const message = JSON.stringify({
         event: event,
-        payload: args
+        payload: args,
       });
       this.ws.send(message);
       this.lastActivity = Date.now();
@@ -211,7 +213,7 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
   join(room: string): this {
     this.rooms.add(room);
     this.server.addToRoom(room, this.id);
-    logger.info(`Socket ${this.id} se unió a la sala ${room}`,{});
+    logger.info(`Socket ${this.id} se unió a la sala ${room}`, {});
     return this;
   }
 
@@ -219,7 +221,7 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
   leave(room: string): this {
     this.rooms.delete(room);
     this.server.removeFromRoom(room, this.id);
-    logger.info(`Socket ${this.id} salió de la sala ${room}`,{});
+    logger.info(`Socket ${this.id} salió de la sala ${room}`, {});
     return this;
   }
 
@@ -233,7 +235,7 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
     return {
       emit: (event: string, ...args: any[]) => {
         this.server.broadcastToRoom(room, event, args, this.id);
-      }
+      },
     };
   }
 
@@ -242,7 +244,7 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
     if (this.isConnected) {
       this.isConnected = false;
       try {
-        this.ws.close(1000, 'Normal closure');
+        this.ws.close(1000, "Normal closure");
       } catch (error) {
         logger.error(`Error cerrando WebSocket ${this.id}:`, error);
       }
@@ -277,7 +279,7 @@ export class SocketIOLikeSocket extends EventEmitter implements ISocket {
       readyState: this.ws.readyState,
       lastActivity: this.lastActivity,
       connectionDuration: Date.now() - this.connectionStartTime,
-      rooms: this.getRooms()
+      rooms: this.getRooms(),
     };
   }
 
@@ -312,8 +314,8 @@ export class SocketIOLikeServer extends EventEmitter {
     if (callback) {
       callback();
     }
-    
-    logger.info(`Servidor SocketIO-like escuchando en puerto ${port}`,{});
+
+    logger.info(`Servidor SocketIO-like escuchando en puerto ${port}`, {});
   }
 
   // Inicializar servidor WebSocket usando un servidor HTTP existente
@@ -324,21 +326,24 @@ export class SocketIOLikeServer extends EventEmitter {
     if (callback) {
       callback();
     }
-    
-    logger.info('Servidor SocketIO-like adjuntado al servidor HTTP existente',{});
+
+    logger.info(
+      "Servidor SocketIO-like adjuntado al servidor HTTP existente",
+      {},
+    );
   }
 
   // Configurar eventos del servidor WebSocket (método privado compartido)
   private setupWebSocketServer(): void {
     if (!this.wss) return;
-    
-    this.wss.on('connection', (ws: WebSocket, request: any) => {
+
+    this.wss.on("connection", (ws: WebSocket, request: any) => {
       const socket = new SocketIOLikeSocket(ws, request, this);
-      logger.info(`Nueva conexión WebSocket: ${socket.id}`,{});
-      
+      logger.info(`Nueva conexión WebSocket: ${socket.id}`, {});
+
       // Emitir evento de conexión
-      this.emitter.emit('connection', socket);
-      super.emit('connection', socket);
+      this.emitter.emit("connection", socket);
+      super.emit("connection", socket);
     });
   }
 
@@ -348,11 +353,14 @@ export class SocketIOLikeServer extends EventEmitter {
       id: socket.id,
       socket,
       joinedAt: Date.now(),
-      rooms: new Set()
+      rooms: new Set(),
     };
-    
+
     this.users.set(socket.id, user);
-    logger.info(`Usuario registrado: ${socket.id}. Total usuarios: ${this.users.size}`,{});
+    logger.info(
+      `Usuario registrado: ${socket.id}. Total usuarios: ${this.users.size}`,
+      {},
+    );
   }
 
   // Desregistrar usuario
@@ -360,12 +368,15 @@ export class SocketIOLikeServer extends EventEmitter {
     const user = this.users.get(socketId);
     if (user) {
       // Remover de todas las salas
-      user.rooms.forEach(room => {
+      user.rooms.forEach((room) => {
         this.removeFromRoom(room, socketId);
       });
-      
+
       this.users.delete(socketId);
-      logger.info(`Usuario desregistrado: ${socketId}. Total usuarios: ${this.users.size}`,{});
+      logger.info(
+        `Usuario desregistrado: ${socketId}. Total usuarios: ${this.users.size}`,
+        {},
+      );
     }
   }
 
@@ -374,9 +385,9 @@ export class SocketIOLikeServer extends EventEmitter {
     if (!this.rooms.has(room)) {
       this.rooms.set(room, new Set());
     }
-    
+
     this.rooms.get(room)!.add(socketId);
-    
+
     const user = this.users.get(socketId);
     if (user) {
       user.rooms.add(room);
@@ -388,13 +399,13 @@ export class SocketIOLikeServer extends EventEmitter {
     const roomUsers = this.rooms.get(room);
     if (roomUsers) {
       roomUsers.delete(socketId);
-      
+
       // Si la sala está vacía, eliminarla
       if (roomUsers.size === 0) {
         this.rooms.delete(room);
       }
     }
-    
+
     const user = this.users.get(socketId);
     if (user) {
       user.rooms.delete(room);
@@ -411,10 +422,15 @@ export class SocketIOLikeServer extends EventEmitter {
   }
 
   // Broadcast a una sala específica
-  broadcastToRoom(room: string, event: string, args: any[], excludeId?: string): void {
+  broadcastToRoom(
+    room: string,
+    event: string,
+    args: any[],
+    excludeId?: string,
+  ): void {
     const roomUsers = this.rooms.get(room);
     if (roomUsers) {
-      roomUsers.forEach(userId => {
+      roomUsers.forEach((userId) => {
         if (userId !== excludeId) {
           const user = this.users.get(userId);
           if (user && user.socket.isAlive()) {
@@ -463,11 +479,11 @@ export class SocketIOLikeServer extends EventEmitter {
     }>;
     rooms: Record<string, number>;
   } {
-    const users = Array.from(this.users.values()).map(user => ({
+    const users = Array.from(this.users.values()).map((user) => ({
       id: user.id,
       joinedAt: user.joinedAt,
       rooms: Array.from(user.rooms),
-      isAlive: user.socket.isAlive()
+      isAlive: user.socket.isAlive(),
     }));
 
     const rooms: Record<string, number> = {};
@@ -479,7 +495,7 @@ export class SocketIOLikeServer extends EventEmitter {
       totalUsers: this.users.size,
       totalRooms: this.rooms.size,
       users,
-      rooms
+      rooms,
     };
   }
 
@@ -492,27 +508,36 @@ export class SocketIOLikeServer extends EventEmitter {
   getUsersInRoom(room: string): ConnectedUser[] {
     const roomUsers = this.rooms.get(room);
     if (!roomUsers) return [];
-    
+
     return Array.from(roomUsers)
-      .map(id => this.users.get(id))
-      .filter(user => user !== undefined) as ConnectedUser[];
+      .map((id) => this.users.get(id))
+      .filter((user) => user !== undefined) as ConnectedUser[];
   }
 
   // Cerrar servidor
   close(callback?: () => void): void {
     if (this.wss) {
-      this.wss.close(callback);
+      if (callback) {
+        this.wss.close(callback);
+      } else {
+        this.wss.close();
+      }
+    } else {
+      // Si no hay servidor WebSocket, ejecutar callback inmediatamente
+      if (callback) {
+        callback();
+      }
     }
-    
+
     // Desconectar todos los usuarios
-    this.users.forEach(user => {
+    this.users.forEach((user) => {
       user.socket.disconnect();
     });
-    
+
     this.users.clear();
     this.rooms.clear();
-    
-    logger.info('Servidor SocketIO-like cerrado',{});
+
+    logger.info("Servidor SocketIO-like cerrado", {});
   }
 }
 
