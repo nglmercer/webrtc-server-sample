@@ -1,6 +1,6 @@
 {
   "name": "webrtc-socket-api",
-  "version": "1.1.0",
+  "version": "1.1.2",
   "description": "WebRTC API with Socket.IO signaling",
   "main": "dist/index.js",
   "type": "module",
@@ -46,7 +46,6 @@
     "nanoid": "^5.1.5",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
-    "webrtc-socket-api": "^1.1.0",
     "ws": "^8.14.2",
     "ws-socketio-adapter": "^1.0.6"
   },

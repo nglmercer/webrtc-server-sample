@@ -162,6 +162,94 @@ socket.emit("get-public-rooms", "public-chat", (rooms) => {
 
 ---
 
+## 🔌 WebSocket Adapters
+
+This package provides flexible WebSocket adapters to support different use cases and runtime environments:
+
+### Socket.IO Adapter (Default)
+- **Best for**: Traditional Node.js applications
+- **Features**: Full Socket.IO compatibility, fallback to HTTP long-polling
+- **Usage**: Automatically used with standard `socket.io` setup
+
+### Bun WebSocket Adapter
+- **Best for**: Bun runtime environments
+- **Features**: Native WebSocket performance, built-in pub/sub
+- **Usage**: Use `BunWebSocketAdapter` with Bun's native WebSocket
+
+### SocketIO-like Adapter
+- **Best for**: Custom WebSocket implementations
+- **Features**: Socket.IO-like API with native WebSocket performance
+- **Documentation**: See [`docs/SOCKETIO_ADAPTER.md`](./docs/SOCKETIO_ADAPTER.md)
+
+#### Example: Using Bun Adapter
+
+```ts
+import { SignalingServer, BunWebSocketAdapter } from "webrtc-socket-api";
+
+const server = Bun.serve({
+  port: 9000,
+  websocket: {
+    open(ws) {
+      const adapter = new BunWebSocketAdapter(ws);
+      signalingServer.handleConnection(adapter);
+    },
+    // ... other handlers
+  }
+});
+```
+
+---
+
+## 💓 Heartbeat System
+
+The package includes a robust heartbeat system to monitor connection health and handle automatic cleanup:
+
+### Features
+- **Connection Monitoring**: Detects stale or disconnected clients
+- **Automatic Cleanup**: Removes inactive connections from room lists
+- **Configurable Intervals**: Adjustable ping/pong timing
+- **Event-driven**: Emits events for connection state changes
+
+### Configuration
+
+```ts
+import { SignalingServer, getHeartbeatConfig } from "webrtc-socket-api";
+
+const signalingServer = new SignalingServer({
+  heartbeat: {
+    enableHeartbeat: true,
+    pingInterval: 30000,        // 30 seconds
+    pingTimeout: 5000,          // 5 seconds timeout
+    maxMissedPings: 3,          // Disconnect after 3 missed pings
+    cleanupInterval: 60000      // Cleanup every minute
+  }
+});
+
+// Or use predefined configurations
+const heartbeatConfig = getHeartbeatConfig('production'); // or 'development'
+```
+
+### Heartbeat Events
+
+```ts
+import { defaultHeartbeatManager } from "webrtc-socket-api";
+
+// Listen for heartbeat events
+defaultHeartbeatManager.on('connection-lost', (socketId) => {
+  console.log(`Connection lost for socket ${socketId}`);
+});
+
+defaultHeartbeatManager.on('connection-restored', (socketId) => {
+  console.log(`Connection restored for socket ${socketId}`);
+});
+
+defaultHeartbeatManager.on('ping-timeout', (socketId, failedCount) => {
+  console.log(`Ping timeout: ${socketId}, failed: ${failedCount}`);
+});
+```
+
+---
+
 ## 📡 Events Reference (Client ⇄ Server)
 
 | Event | Direction | Payload | Description |
@@ -174,7 +262,7 @@ socket.emit("get-public-rooms", "public-chat", (rooms) => {
 | `is-valid-password` | ⬆️ | `password, roomid` | Validate before joining. |
 | `close-entire-session` | ⬆️ | — | Owner closes the room. |
 | `extra-data-updated` | ⬆️ | `extra` | Update your own metadata. |
-| `get-remote-user-extra-data` | ⬆️ | `remoteUserId` | Fetch another user’s metadata. |
+| `get-remote-user-extra-data` | ⬆️ | `remoteUserId` | Fetch another user's metadata. |
 | `changed-uuid` | ⬆️ | `newUserId` | Change your userid on the fly. |
 | `disconnect-with` | ⬆️ | `remoteUserId` | Stop peering with a specific user. |
 | `RTCMultiConnection-Message` | ⬆️⬇️ | `{ remoteUserId, message }` | SDP / ICE / custom signaling. |
@@ -194,6 +282,16 @@ src/
  │   ├── roomHandlers.ts      // open-room, join-room …
  │   ├── userHandlers.ts      // extra-data-updated, uuid change …
  │   └── messageHandlers.ts   // SDP/ICE relaying
+ ├── adapters/
+ │   ├── SocketIOLikeAdapter.ts  // Socket.IO-like WebSocket adapter
+ │   └── BunWebSocketAdapter.ts  // Bun-specific WebSocket adapter
+ ├── heartbeat/
+ │   ├── HeartbeatManager.ts     // Connection monitoring
+ │   ├── config.ts              // Heartbeat configurations
+ │   └── index.ts               // Public exports
+ ├── logger/
+ │   ├── Logger.ts              // Logging system
+ │   └── index.ts               // Logger exports
  └── utils/
      ├── roomUtils.ts
      ├── userUtils.ts
@@ -210,8 +308,25 @@ Pass an optional config object as the **second argument** to `signaling_server(s
 interface Config {
   logToFile?: boolean;   // default false
   logPath?: string;      // default "./logs"
+  maxParticipantsAllowed?: number; // default 999
+  heartbeat?: {
+    enableHeartbeat?: boolean;
+    pingInterval?: number;
+    pingTimeout?: number;
+    maxMissedPings?: number;
+    cleanupInterval?: number;
+  };
 }
 ```
+
+---
+
+## 📚 Additional Documentation
+
+- **[Socket.IO Adapter Guide](./docs/SOCKETIO_ADAPTER.md)** - Custom WebSocket implementation
+- **[Publishing to NPM](./docs/PUBLISHING_NPM.md)** - Distribution strategy
+- **[Code Examples](./docs/EXAMPLES/)** - Additional implementation examples
+- **[Spanish Documentation](./README.ES.md)** - Full documentation in Spanish
 
 ---
 
