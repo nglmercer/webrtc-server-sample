@@ -1,0 +1,17 @@
+{
+  "test": {
+    "match": ["**/*.test.{ts,tsx}"],
+    "testEnvironment": "node",
+    "moduleType": "module",
+    "timeout": 10000,
+    "setupFiles": ["./setup.ts"],
+    "coverageThreshold": {
+      "global": {
+        "branches": 70,
+        "functions": 70,
+        "lines": 70,
+        "statements": 70
+      }
+    }
+  }
+}

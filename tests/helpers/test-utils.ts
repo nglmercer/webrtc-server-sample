@@ -123,6 +123,15 @@ export class MockSocket implements CustomSocket {
     this.emittedEvents = [];
   }
 
+  once(event: string, callback: Function): this {
+    const onceCallback = (...args: any[]) => {
+      callback(...args);
+      this.off(event, onceCallback);
+    };
+    this.on(event, onceCallback);
+    return this;
+  }
+
   simulateEvent(event: string, ...args: any[]) {
     const handlers = this.eventHandlers.get(event);
     if (handlers) {
