@@ -9,7 +9,7 @@ import {
   defaultLogger as logger,
   getHeartbeatConfig,
   SocketIOLikeServer,
-} from "webrtc-socket-api"; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
+} from "../dist/index.js"; //prod=  'webrtc-socket-api'  || dev= './index' ../src/signal_server'
 //import { defaultLogger } from 'ws-socketio-adapter';
 //import { SocketIOLikeSocket } from '../src/adapters/SocketIOLikeSocket';
 //import { defaultLogger as logger } from '../src/logger';
