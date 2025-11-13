@@ -4,7 +4,7 @@
  * This module provides an enhanced WebRTC provider that solves three main
  * limitations of WebRTC in Bun:
  * 1. ✅ Messages can be sent before connection is complete (message queuing)
- * 2. ✅ Multiple peers can connect in the same process (multi-peer manager)
+ * 2. ✅ Multiple peers can connect in same process (multi-peer manager)
  * 3. ✅ Real messaging without external signaling server (local signaling)
  */
 
@@ -12,6 +12,7 @@ import { EventEmitter } from 'events';
 import { MultiPeerManager } from './multi-peer-manager.js';
 import { getGlobalSignalingServer, resetGlobalSignalingServer } from './signaling-server.js';
 import { NodeDataChannelWebRTC } from './node-datachannel.js';
+import { UnifiedWebRTCProvider } from './unified-webrtc-provider.js';
 import type {
   WebRTCProvider,
   WebRTCConfig,
@@ -43,6 +44,9 @@ export interface EnhancedWebRTCConfig extends WebRTCConfig {
   
   // Backward compatibility
   legacyMode?: boolean;
+  
+  // Force real WebRTC implementation
+  useRealWebRTC?: boolean;
 }
 
 /**
@@ -56,7 +60,7 @@ export interface EnhancedWebRTCConfig extends WebRTCConfig {
 export class EnhancedWebRTC extends EventEmitter implements WebRTCProvider {
   private config: EnhancedWebRTCConfig;
   private multiPeerManager?: MultiPeerManager;
-  private legacyProvider?: NodeDataChannelWebRTC;
+  private legacyProvider?: NodeDataChannelWebRTC | UnifiedWebRTCProvider;
   private connected = false;
   private isInitialized = false;
 
@@ -84,6 +88,9 @@ export class EnhancedWebRTC extends EventEmitter implements WebRTCProvider {
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' }
       ],
+      
+      // Default to real WebRTC in production
+      useRealWebRTC: process.env.NODE_ENV === 'production' || process.env.USE_REAL_WEBRTC === 'true',
       
       ...config
     };
@@ -119,7 +126,8 @@ export class EnhancedWebRTC extends EventEmitter implements WebRTCProvider {
       this.emit('connected');
 
       if (finalConfig.debug) {
-        console.log(`EnhancedWebRTC connected in ${finalConfig.legacyMode ? 'legacy' : 'enhanced'} mode`);
+        const implementation = finalConfig.useRealWebRTC ? 'REAL WebRTC' : 'Mock WebRTC';
+        console.log(`EnhancedWebRTC connected in ${finalConfig.legacyMode ? 'legacy' : 'enhanced'} mode with ${implementation}`);
       }
     } catch (error) {
       console.error('Failed to connect EnhancedWebRTC:', error);
@@ -253,7 +261,7 @@ export class EnhancedWebRTC extends EventEmitter implements WebRTCProvider {
   /**
    * Create a data channel for a specific peer (enhanced mode only)
    */
-  createDataChannelForPeer(peerId: string, label: string, options: RTCDataChannelInit = {}): RTCDataChannel {
+  createDataChannelForPeer(peerId: string, label: string, options: RTCDataChannelInit = {}): Promise<RTCDataChannel> {
     if (this.config.legacyMode) {
       throw new Error('createDataChannelForPeer not available in legacy mode. Use createDataChannel() instead');
     }
@@ -446,10 +454,17 @@ export class EnhancedWebRTC extends EventEmitter implements WebRTCProvider {
       roomId: config.roomId,
       maxPeers: config.maxPeers,
       autoConnect: config.autoConnect,
-      messageQueueSize: config.messageQueueSize,
+      messageQueue: {
+        maxSize: config.messageQueueSize || 1000,
+        maxRetries: 5,
+        retryDelay: 1000,
+        enablePriority: false
+      },
       connectionTimeout: config.connectionTimeout,
       debug: config.debug,
-      iceServers: config.iceServers
+      iceServers: config.iceServers,
+      // Use unified WebRTC implementation if specified
+      webrtcProvider: config.useRealWebRTC ? 'unified-webrtc' : 'node-datachannel'
     });
 
     // Set up event forwarding
@@ -460,12 +475,31 @@ export class EnhancedWebRTC extends EventEmitter implements WebRTCProvider {
   }
 
   private async connectLegacy(config: EnhancedWebRTCConfig): Promise<void> {
-    // Create legacy provider
-    this.legacyProvider = new NodeDataChannelWebRTC({
-      userId: config.userId,
-      debug: config.debug,
-      iceServers: config.iceServers
-    });
+    // Choose provider based on configuration
+    const useReal = config.useRealWebRTC || false;
+    
+    if (useReal) {
+      this.legacyProvider = new UnifiedWebRTCProvider({
+        userId: config.userId,
+        debug: config.debug,
+        iceServers: config.iceServers,
+        useRealWebRTC: true
+      });
+      
+      if (config.debug) {
+        console.log('🌐 Using UNIFIED REAL WebRTC implementation for legacy mode');
+      }
+    } else {
+      this.legacyProvider = new NodeDataChannelWebRTC({
+        userId: config.userId,
+        debug: config.debug,
+        iceServers: config.iceServers
+      });
+      
+      if (config.debug) {
+        console.log('🎭 Using MOCK WebRTC implementation for legacy mode');
+      }
+    }
 
     // Set up event forwarding
     this.setupLegacyEventHandlers();

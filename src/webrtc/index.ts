@@ -8,10 +8,12 @@
 import { NodeDataChannelWebRTC } from './node-datachannel.js';
 import { SimplePeerWebRTC } from './simple-peer.js';
 import { EnhancedWebRTC } from './enhanced-webrtc.js';
+import { NodeDataChannelWebRTCReal } from './node-datachannel-real.js';
 import type { WebRTCProvider, WebRTCConfig, RTCConfiguration } from './types.js';
 
 export { NodeDataChannelWebRTC, SimplePeerWebRTC };
 export { EnhancedWebRTC } from './enhanced-webrtc';
+export { NodeDataChannelWebRTCReal } from './node-datachannel-real';
 export type { WebRTCProvider, WebRTCConfig, RTCConfiguration } from './types.js';
 
 /**
@@ -21,7 +23,7 @@ export type { WebRTCProvider, WebRTCConfig, RTCConfiguration } from './types.js'
  * @returns A WebRTC provider instance
  */
 export function createWebRTCProvider(
-  providerType: 'node-datachannel' | 'simple-peer' | 'enhanced' = 'enhanced',
+  providerType: 'node-datachannel' | 'simple-peer' | 'enhanced' | 'node-datachannel-real' = 'enhanced',
   config?: WebRTCConfig
 ): WebRTCProvider {
   switch (providerType) {
@@ -31,6 +33,8 @@ export function createWebRTCProvider(
       return new SimplePeerWebRTC(config);
     case 'enhanced':
       return new EnhancedWebRTC(config);
+    case 'node-datachannel-real':
+      return new NodeDataChannelWebRTCReal(config);
     default:
       throw new Error(`Unsupported WebRTC provider: ${providerType}`);
   }
@@ -42,6 +46,15 @@ export function createWebRTCProvider(
  * @returns The recommended WebRTC provider for Bun environment
  */
 export function getRecommendedBunProvider(config?: WebRTCConfig): WebRTCProvider {
+  // Check if we should use real implementation for production
+  const useReal = process.env.NODE_ENV === 'production' || process.env.USE_REAL_WEBRTC === 'true';
+  
+  if (useReal) {
+    console.log('🌐 Using REAL WebRTC implementation for production');
+    return new NodeDataChannelWebRTCReal(config);
+  }
+  
+  // Default to enhanced for development/testing
   return new EnhancedWebRTC(config);
 }
 
@@ -50,7 +63,7 @@ export function getRecommendedBunProvider(config?: WebRTCConfig): WebRTCProvider
  * @param providerType - The provider type to check
  * @returns True if the provider is available
  */
-export function isProviderAvailable(providerType: 'node-datachannel' | 'simple-peer' | 'enhanced'): boolean {
+export function isProviderAvailable(providerType: 'node-datachannel' | 'simple-peer' | 'enhanced' | 'node-datachannel-real'): boolean {
   try {
     switch (providerType) {
       case 'node-datachannel':
@@ -61,6 +74,9 @@ export function isProviderAvailable(providerType: 'node-datachannel' | 'simple-p
         return true;
       case 'enhanced':
         return true; // Enhanced provider is always available (built-in)
+      case 'node-datachannel-real':
+        require('node-datachannel');
+        return true; // Same library as node-datachannel
       default:
         return false;
     }
@@ -73,8 +89,8 @@ export function isProviderAvailable(providerType: 'node-datachannel' | 'simple-p
  * Get all available WebRTC providers
  * @returns Array of available provider names
  */
-export function getAvailableProviders(): Array<'node-datachannel' | 'simple-peer' | 'enhanced'> {
-  const providers: Array<'node-datachannel' | 'simple-peer' | 'enhanced'> = [];
+export function getAvailableProviders(): Array<'node-datachannel' | 'simple-peer' | 'enhanced' | 'node-datachannel-real'> {
+  const providers: Array<'node-datachannel' | 'simple-peer' | 'enhanced' | 'node-datachannel-real'> = [];
   
   if (isProviderAvailable('node-datachannel')) {
     providers.push('node-datachannel');
@@ -87,9 +103,14 @@ export function getAvailableProviders(): Array<'node-datachannel' | 'simple-peer
   if (isProviderAvailable('enhanced')) {
     providers.push('enhanced');
   }
+
+  if (isProviderAvailable('node-datachannel-real')) {
+    providers.push('node-datachannel-real');
+  }
   
   return providers;
 }
 
-// Export the main classes directly for convenience
+// Export: main classes directly for convenience
 export { NodeDataChannelWebRTC as WebRTC } from './node-datachannel';
+export { NodeDataChannelWebRTCReal as WebRTCReal } from './node-datachannel-real';

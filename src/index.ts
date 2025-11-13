@@ -5,11 +5,25 @@ import {
   SocketIOLikeServer,
 } from "./adapters/SocketIOLikeAdapter.js";
 import { BunWebSocketAdapter } from "./adapters/BunWebSocketAdapter.js";
+import { SignalingAdapter, createSignalingAdapter } from "./adapters/SignalingAdapter.js";
 import { defaultLogger as logger } from "./logger/index.js";
 import { getHeartbeatConfig } from "./heartbeat/index.js";
 export * from "./logger/index.js";
 export * from "./heartbeat/index.js";
-import type { User, Room, CustomSocket, ISocket } from "./types.js";
+export * from "./webrtc/index.js";
+import type { 
+  User, 
+  Room, 
+  CustomSocket, 
+  ISocket,
+  WebRTCMessage,
+  WebRTCPeerInfo,
+  WebRTCConfig,
+  RTCDataChannel,
+  RTCIceCandidate,
+  RTCIceServer,
+  RTCSessionDescription
+} from "./types.js";
 export {
   signaling_server,
   SignalingServer,
@@ -17,7 +31,19 @@ export {
   SocketIOLikeSocket,
   SocketIOLikeServer,
   BunWebSocketAdapter,
+  SignalingAdapter,
+  createSignalingAdapter,
   logger,
   getHeartbeatConfig,
+  User, 
+  Room, 
+  CustomSocket, 
+  ISocket,
+  WebRTCMessage,
+  WebRTCPeerInfo,
+  WebRTCConfig,
+  RTCDataChannel,
+  RTCIceCandidate,
+  RTCIceServer,
+  RTCSessionDescription
 };
-export { User, Room, CustomSocket, ISocket };

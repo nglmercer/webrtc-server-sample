@@ -1,6 +1,7 @@
 import { User, Room, CustomSocket } from "../types.js";
 import type {SignalConfig} from "../signal_server.js";
 import pushLogs from "../logger/pushLogs.js";
+import { SignalingAdapter } from "../adapters/SignalingAdapter.js";
 
 function onMessageCallback(
   socket: CustomSocket,
@@ -104,13 +105,77 @@ function relayMessage(socket: CustomSocket, message:any, listOfUsers: { [key: st
     console.log(`[Server] Retransmitiendo mensaje de ${socket.userid} a ${remoteUserId}`);
     remoteUser.socket.emit(listOfUsers[remoteUserId].socketMessageEvent, message);
 }
+
+function handleWebRTCMessage(socket: CustomSocket, message: any, listOfUsers: { [key: string]: User }, signalingAdapter?: SignalingAdapter) {
+    const { type, to, payload, from } = message;
+    
+    console.log(`[WebRTC] Handling ${type} message from ${from} to ${to}`);
+    
+    // Validate WebRTC message structure
+    if (!type || !from) {
+        console.warn('[WebRTC] Invalid WebRTC message structure:', message);
+        return;
+    }
+    
+    // Route through signaling adapter if available
+    if (signalingAdapter) {
+        signalingAdapter.sendSignalingMessage(message);
+        return;
+    }
+    
+    // Fallback to direct user routing
+    if (to && to !== "system") {
+        const targetUser = listOfUsers[to];
+        if (targetUser) {
+            // Send WebRTC message directly to target
+            targetUser.socket.emit('webrtc-message', message);
+            console.log(`[WebRTC] Routed ${type} from ${from} to ${to}`);
+        } else {
+            console.warn(`[WebRTC] Target user ${to} not found for ${type} message`);
+            socket.emit('webrtc-error', { type: 'user-not-found', target: to });
+        }
+    } else if (to === "system") {
+        // Handle system-level WebRTC messages
+        handleWebRTCSystemMessage(socket, message, listOfUsers);
+    }
+}
+
+function handleWebRTCSystemMessage(socket: CustomSocket, message: any, listOfUsers: { [key: string]: User }) {
+    const { type, payload } = message;
+    
+    switch (type) {
+        case 'detect-peers':
+            // Respond with list of available peers for WebRTC connections
+            const availablePeers = Object.keys(listOfUsers).filter(userId => userId !== socket.userid);
+            socket.emit('webrtc-peers-list', { peers: availablePeers });
+            console.log(`[WebRTC] Sent peers list to ${socket.userid}:`, availablePeers);
+            break;
+            
+        case 'register-capabilities':
+            // Register peer capabilities for WebRTC
+            const capabilities = payload?.capabilities || [];
+            console.log(`[WebRTC] Peer ${socket.userid} registered capabilities:`, capabilities);
+            socket.emit('webrtc-capabilities-registered', { success: true });
+            break;
+            
+        default:
+            console.warn(`[WebRTC] Unknown system message type: ${type}`);
+    }
+}
 export function registerMessageHandlers(
   socket: CustomSocket,
-  listOfRooms: { [key: string]: Room },
+  rooms: { [key: string]: Room },
   listOfUsers: { [key: string]: User },
   socketMessageEvent: string,
-  config: any
+  config: any,
+  signalingAdapter?: SignalingAdapter
 ) {
+  // Check if socket has on method (for testing compatibility)
+  if (typeof socket.on !== 'function') {
+    console.warn('Socket does not have on method, skipping message handler registration');
+    return;
+  }
+
   socket.on(socketMessageEvent, (message: any, callback: (isPresent: boolean, userid: string) => void) => {
     try {
       if (message.remoteUserId === socket.userid) return;
@@ -119,8 +184,8 @@ export function registerMessageHandlers(
           relayMessage(socket, message, listOfUsers);
       }
       if (message.remoteUserId && message.remoteUserId !== "system" && message.message.newParticipationRequest) {
-        if (listOfRooms[message.remoteUserId]) {
-          joinARoom(socket, message, listOfRooms, listOfUsers, socketMessageEvent);
+        if (rooms[message.remoteUserId]) {
+          joinARoom(socket, message, rooms, listOfUsers, socketMessageEvent);
           return;
         }
       }
@@ -144,6 +209,15 @@ export function registerMessageHandlers(
       onMessageCallback(socket, message, listOfUsers, socketMessageEvent, config);
     } catch (e) {
       pushLogs(config, "on-socketMessageEvent", e);
+    }
+  });
+
+  // WebRTC message handler for native WebRTC signaling
+  socket.on('webrtc-message', (message: any) => {
+    try {
+      handleWebRTCMessage(socket, message, listOfUsers, signalingAdapter);
+    } catch (e) {
+      pushLogs(config, "on-webrtc-message", e);
     }
   });
 

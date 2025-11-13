@@ -55,6 +55,7 @@ export interface WebRTCConfig extends RTCConfiguration {
   // General configuration
   debug?: boolean;
   autoConnect?: boolean;
+  useRealWebRTC?: boolean;
   
   // Media configuration
   mediaConstraints?: {

@@ -1,56 +1,62 @@
 /**
- * Multi-Peer Connection Manager for WebRTC
+ * Refactored Multi-Peer Connection Manager for WebRTC
  * 
- * This module manages multiple WebRTC peer connections within the same process,
- * enabling peer-to-peer communication without external infrastructure.
+ * This is a modular, maintainable version that separates concerns
+ * into specialized classes for better code organization.
  */
 
 import { EventEmitter } from 'events';
 import { NodeDataChannelWebRTC } from './node-datachannel.js';
-import { getGlobalSignalingServer, SignalingMessage } from './signaling-server.js';
-import type { WebRTCConfig, RTCSessionDescriptionInit, RTCIceCandidateInit, RTCDataChannel } from './types.js';
-import { RTCSdpType, RTCDataChannelState } from './types.js';
-
-export interface QueuedMessage {
-  data: string | ArrayBuffer | ArrayBufferView;
-  timestamp: number;
-  channelLabel: string;
-  retryCount: number;
-  maxRetries: number;
-}
-
-export interface PeerConnection {
-  peerId: string;
-  webrtc: NodeDataChannelWebRTC | null;
-  connected: boolean;
-  dataChannels: Map<string, RTCDataChannel>;
-  messageQueue: QueuedMessage[];
-  createdAt: number;
-  lastActivity: number;
-}
+import { NodeDataChannelWebRTCReal } from './node-datachannel-real.js';
+import { getGlobalSignalingServer } from './signaling-server.js';
+import { PeerConnection } from './peer-connection.js';
+import { MessageQueue, type MessageQueueConfig } from './message-queue.js';
+import { SignalingManager, type SignalingManagerConfig } from './signaling-manager.js';
+import type { WebRTCConfig, RTCDataChannel } from './types.js';
+import { SignalingAdapter, createSignalingAdapter } from '../adapters/SignalingAdapter.js';
+import { SignalingServer } from '../signal_server.js';
+import { UnifiedWebRTCProvider } from './unified-webrtc-provider.js';
 
 export interface MultiPeerConfig extends WebRTCConfig {
   roomId?: string;
   maxPeers?: number;
   autoConnect?: boolean;
-  messageQueueSize?: number;
   connectionTimeout?: number;
   heartbeatInterval?: number;
+  messageQueue?: MessageQueueConfig;
+  signaling?: SignalingManagerConfig;
+  useMainSignalingServer?: boolean;
+  mainSignalingServer?: SignalingServer;
+  webrtcProvider?: 'node-datachannel' | 'node-datachannel-real' | 'unified-webrtc';
+}
+
+export interface MultiPeerStats {
+  totalPeers: number;
+  connectedPeers: number;
+  totalQueuedMessages: number;
+  uptime: number;
+  signaling: {
+    pendingOffers: number;
+    pendingAnswers: number;
+    pendingIceCandidates: number;
+    totalPeers: number;
+  };
 }
 
 /**
- * Multi-Peer Connection Manager
- * 
- * Manages multiple WebRTC connections, handles signaling, and provides
- * message queuing for reliable communication.
+ * Refactored Multi-Peer Connection Manager
  */
 export class MultiPeerManager extends EventEmitter {
   private localPeerId: string;
   private config: MultiPeerConfig;
-  private peers: Map<string, PeerConnection> = new Map();
+  private peers = new Map<string, PeerConnection>();
+  private messageQueues = new Map<string, MessageQueue>();
+  private signalingManager: SignalingManager;
   private signalingServer = getGlobalSignalingServer();
+  private signalingAdapter?: SignalingAdapter;
   private heartbeatTimer?: NodeJS.Timeout;
   private isInitialized = false;
+  private startTime = Date.now();
 
   constructor(localPeerId: string, config: MultiPeerConfig = {}) {
     super();
@@ -60,21 +66,48 @@ export class MultiPeerManager extends EventEmitter {
       roomId: 'default-room',
       maxPeers: 10,
       autoConnect: true,
-      messageQueueSize: 1000,
       connectionTimeout: 30000,
       heartbeatInterval: 5000,
       debug: false,
+      useMainSignalingServer: false,
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' }
       ],
+      messageQueue: {
+        maxSize: 1000,
+        maxRetries: 5,
+        retryDelay: 1000,
+        enablePriority: false
+      },
+      signaling: {
+        debug: false,
+        enableIceRestart: true,
+        connectionTimeout: 30000
+      },
       ...config
     };
 
+    // Initialize signaling adapter if using main signaling server
+    if (this.config.useMainSignalingServer && this.config.mainSignalingServer) {
+      this.signalingAdapter = createSignalingAdapter({
+        signalingServer: this.config.mainSignalingServer,
+        enableWebRTC: true,
+        enableLegacySupport: true,
+        debug: this.config.debug
+      });
+      this.setupSignalingAdapterEvents();
+    }
+
+    // Initialize signaling manager
+    this.signalingManager = new SignalingManager(localPeerId, this.config.signaling);
+    this.setupSignalingEvents();
     this.setupSignalingHandlers();
     
     if (this.config.autoConnect) {
-      this.initialize();
+      this.initialize().catch(error => {
+        console.error('Auto-initialization failed:', error);
+      });
     }
   }
 
@@ -97,12 +130,13 @@ export class MultiPeerManager extends EventEmitter {
       this.isInitialized = true;
 
       if (this.config.debug) {
-        console.log(`MultiPeerManager initialized for peer ${this.localPeerId} in room ${this.config.roomId}`);
+        const provider = this.config.webrtcProvider || 'node-datachannel';
+        console.log(`MultiPeerManagerV2 initialized for peer ${this.localPeerId} in room ${this.config.roomId} with ${provider}`);
       }
 
       this.emit('initialized');
     } catch (error) {
-      console.error('Failed to initialize MultiPeerManager:', error);
+      console.error('Failed to initialize MultiPeerManagerV2:', error);
       throw error;
     }
   }
@@ -120,26 +154,18 @@ export class MultiPeerManager extends EventEmitter {
     }
 
     try {
-      // Create WebRTC instance for this peer
-      const webrtc = new NodeDataChannelWebRTC({
-        ...this.config,
-        userId: `${this.localPeerId}-${peerId}`, // Unique ID per connection
-        debug: this.config.debug
-      });
+      // Create WebRTC instance based on provider
+      const webrtc = this.createWebRTCInstance(peerId);
 
-      // Create peer connection record
-      const peerConnection: PeerConnection = {
-        peerId,
-        webrtc,
-        connected: false,
-        dataChannels: new Map(),
-        messageQueue: [],
-        createdAt: Date.now(),
-        lastActivity: Date.now()
-      };
+      // Create peer connection
+      const peerConnection = new PeerConnection(peerId, webrtc, this.config);
+      
+      // Create message queue for this peer
+      const messageQueue = new MessageQueue(this.config.messageQueue);
+      this.messageQueues.set(peerId, messageQueue);
 
-      // Set up event handlers
-      this.setupPeerHandlers(peerConnection);
+      // Setup peer events BEFORE connecting
+      this.setupPeerEvents(peerConnection);
 
       // Connect to WebRTC
       await webrtc.connect();
@@ -147,8 +173,11 @@ export class MultiPeerManager extends EventEmitter {
       // Store peer connection
       this.peers.set(peerId, peerConnection);
 
-      // Start connection process
-      await this.initiateConnection(peerConnection);
+      // Wait a bit for WebRTC to initialize
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Initiate connection process
+      await this.initiateConnection(peerId);
 
       if (this.config.debug) {
         console.log(`Initiated connection to peer: ${peerId}`);
@@ -169,22 +198,21 @@ export class MultiPeerManager extends EventEmitter {
     if (!peerConnection) return;
 
     try {
-      // Close WebRTC connection only if it exists
-      if (peerConnection.webrtc) {
-        peerConnection.webrtc.disconnect();
+      // Clean up peer connection
+      if (peerConnection && typeof peerConnection.cleanup === 'function') {
+        peerConnection.cleanup();
+      }
+      this.peers.delete(peerId);
+
+      // Clean up message queue
+      const messageQueue = this.messageQueues.get(peerId);
+      if (messageQueue) {
+        messageQueue.clear();
+        this.messageQueues.delete(peerId);
       }
 
-      // Clean up data channels
-      peerConnection.dataChannels.forEach(channel => {
-        try {
-          channel.close();
-        } catch (error) {
-          // Ignore cleanup errors
-        }
-      });
-
-      // Remove from peers map
-      this.peers.delete(peerId);
+      // Clear signaling state
+      this.signalingManager.clearPeerState(peerId);
 
       if (this.config.debug) {
         console.log(`Disconnected from peer: ${peerId}`);
@@ -203,8 +231,16 @@ export class MultiPeerManager extends EventEmitter {
     const peerIds = Array.from(this.peers.keys());
     peerIds.forEach(peerId => this.disconnectFromPeer(peerId));
 
+    // Leave local signaling server
     this.signalingServer.leaveRoom(this.localPeerId);
+    
+    // Unregister from main signaling server if using adapter
+    if (this.signalingAdapter && this.config.useMainSignalingServer) {
+      this.signalingAdapter.unregisterWebRTCPeer(this.localPeerId);
+    }
+    
     this.stopHeartbeat();
+    this.signalingManager.clear();
 
     this.isInitialized = false;
 
@@ -218,35 +254,38 @@ export class MultiPeerManager extends EventEmitter {
   /**
    * Send a message to a specific peer
    */
-  sendToPeer(peerId: string, data: string | ArrayBuffer | ArrayBufferView, channelLabel: string = 'default'): void {
+  sendToPeer(
+    peerId: string, 
+    data: string | ArrayBuffer | ArrayBufferView, 
+    channelLabel: string = 'default'
+  ): void {
     let peerConnection = this.peers.get(peerId);
+    let messageQueue = this.messageQueues.get(peerId);
     
-    // If peer doesn't exist, create a temporary connection for queuing
+    // Create temporary peer and queue if peer doesn't exist
     if (!peerConnection) {
-      peerConnection = {
-        peerId,
-        webrtc: null, // Will be created when actually connecting
-        connected: false,
-        dataChannels: new Map(),
-        messageQueue: [],
-        createdAt: Date.now(),
-        lastActivity: Date.now()
-      };
+      peerConnection = new PeerConnection(peerId, null, this.config);
+      messageQueue = new MessageQueue(this.config.messageQueue);
       
       this.peers.set(peerId, peerConnection);
+      this.messageQueues.set(peerId, messageQueue);
       
       if (this.config.debug) {
         console.log(`Created temporary peer connection for queuing: ${peerId}`);
       }
     }
 
-    // Update last activity
-    peerConnection.lastActivity = Date.now();
+    // Update activity
+    if (peerConnection && typeof peerConnection.updateActivity === 'function') {
+      peerConnection.updateActivity();
+    }
 
     // Try to send immediately if connected
-    if (peerConnection.connected && peerConnection.dataChannels.has(channelLabel)) {
-      const channel = peerConnection.dataChannels.get(channelLabel)!;
-      if (channel.readyState === RTCDataChannelState.OPEN) {
+    if (peerConnection.connected) {
+      const openChannels = peerConnection.getOpenDataChannels();
+      const channel = openChannels.get(channelLabel);
+      
+      if (channel) {
         try {
           channel.send(data);
           if (this.config.debug) {
@@ -259,14 +298,21 @@ export class MultiPeerManager extends EventEmitter {
       }
     }
 
-    // Queue the message if immediate send failed
-    this.queueMessage(peerConnection, data, channelLabel);
+    // Queue message
+    messageQueue?.enqueue(data, channelLabel);
+    
+    if (this.config.debug) {
+      console.log(`Message queued for ${peerId} via channel ${channelLabel}`);
+    }
   }
 
   /**
    * Broadcast a message to all connected peers
    */
-  broadcast(data: string | ArrayBuffer | ArrayBufferView, channelLabel: string = 'default'): void {
+  broadcast(
+    data: string | ArrayBuffer | ArrayBufferView, 
+    channelLabel: string = 'default'
+  ): void {
     const connectedPeers = this.getConnectedPeers();
     
     if (this.config.debug) {
@@ -285,26 +331,43 @@ export class MultiPeerManager extends EventEmitter {
   /**
    * Create a data channel for a specific peer
    */
-  createDataChannel(peerId: string, label: string, options: any = {}): RTCDataChannel {
-    const peerConnection = this.peers.get(peerId);
+  async createDataChannel(
+    peerId: string, 
+    label: string, 
+    options: any = {}
+  ): Promise<RTCDataChannel> {
+    let peerConnection = this.peers.get(peerId);
+    
+    // Create peer connection if it doesn't exist
     if (!peerConnection) {
-      throw new Error(`Not connected to peer: ${peerId}`);
+      if (this.config.debug) {
+        console.log(`Creating connection for data channel '${label}' with peer ${peerId}`);
+      }
+      
+      await this.connectToPeer(peerId);
+      peerConnection = this.peers.get(peerId)!;
     }
 
-    if (peerConnection.dataChannels.has(label)) {
-      throw new Error(`Data channel already exists: ${label}`);
+    // Wait for WebRTC connection to be established with retry logic
+    let retries = 0;
+    const maxRetries = 10; // Reduced from 20 for faster testing
+    
+    while (!peerConnection?.webrtc && retries < maxRetries) {
+      if (this.config.debug) {
+        console.log(`Waiting for WebRTC connection to ${peerId}, attempt ${retries + 1}/${maxRetries}`);
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 500)); // Reduced from 1000ms
+      peerConnection = this.peers.get(peerId);
+      retries++;
     }
 
-    if (!peerConnection.webrtc) {
-      throw new Error(`WebRTC connection not established for peer: ${peerId}`);
+    if (!peerConnection?.webrtc) {
+      throw new Error(`WebRTC connection not established for peer: ${peerId} after ${maxRetries} attempts`);
     }
 
     const dataChannel = peerConnection.webrtc.createDataChannel(label, options);
-    peerConnection.dataChannels.set(label, dataChannel);
-
-    // Set up data channel handlers
-    this.setupDataChannelHandlers(peerConnection, dataChannel);
-
+    
     if (this.config.debug) {
       console.log(`Data channel ${label} created for peer ${peerId}`);
     }
@@ -323,14 +386,14 @@ export class MultiPeerManager extends EventEmitter {
   }
 
   /**
-   * Get list of all peers (connected and connecting)
+   * Get list of all peers
    */
   getAllPeers(): string[] {
     return Array.from(this.peers.keys());
   }
 
   /**
-   * Get connection status for a specific peer
+   * Check if peer is connected
    */
   isPeerConnected(peerId: string): boolean {
     const peerConnection = this.peers.get(peerId);
@@ -338,24 +401,22 @@ export class MultiPeerManager extends EventEmitter {
   }
 
   /**
-   * Get statistics for the multi-peer manager
+   * Get comprehensive statistics
    */
-  getStats(): {
-    totalPeers: number;
-    connectedPeers: number;
-    totalQueuedMessages: number;
-    uptime: number;
-  } {
+  getStats(): MultiPeerStats {
     let totalQueuedMessages = 0;
-    this.peers.forEach(peer => {
-      totalQueuedMessages += peer.messageQueue.length;
+    this.messageQueues.forEach(queue => {
+      totalQueuedMessages += queue.size();
     });
+
+    const signalingStats = this.signalingManager.getStats();
 
     return {
       totalPeers: this.peers.size,
       connectedPeers: this.getConnectedPeers().length,
       totalQueuedMessages,
-      uptime: Date.now() - (this.peers.size > 0 ? Math.min(...Array.from(this.peers.values()).map(p => p.createdAt)) : Date.now())
+      uptime: Date.now() - this.startTime,
+      signaling: signalingStats
     };
   }
 
@@ -366,16 +427,116 @@ export class MultiPeerManager extends EventEmitter {
     return this.peers.get(peerId);
   }
 
-  private setupSignalingHandlers(): void {
-    // Handle incoming signaling messages
-    this.signalingServer.on(`message:${this.localPeerId}`, (message: SignalingMessage) => {
-      this.handleSignalingMessage(message);
+  /**
+   * Create WebRTC instance based on provider configuration
+   */
+  private createWebRTCInstance(peerId: string) {
+    const provider = this.config.webrtcProvider || 'node-datachannel';
+    
+    if (provider === 'unified-webrtc') {
+      if (this.config.debug) {
+        console.log(`🔧 Creating UNIFIED WebRTC instance for peer ${peerId}`);
+      }
+      return new UnifiedWebRTCProvider({
+        ...this.config,
+        userId: `${this.localPeerId}-${peerId}`,
+        debug: this.config.debug,
+        useRealWebRTC: true
+      });
+    } else if (provider === 'node-datachannel-real') {
+      if (this.config.debug) {
+        console.log(`🌐 Creating REAL WebRTC instance for peer ${peerId}`);
+      }
+      return new NodeDataChannelWebRTCReal({
+        ...this.config,
+        userId: `${this.localPeerId}-${peerId}`,
+        debug: this.config.debug
+      });
+    } else {
+      if (this.config.debug) {
+        console.log(`🎭 Creating MOCK WebRTC instance for peer ${peerId}`);
+      }
+      return new NodeDataChannelWebRTC({
+        ...this.config,
+        userId: `${this.localPeerId}-${peerId}`,
+        debug: this.config.debug
+      });
+    }
+  }
+
+  private setupSignalingEvents(): void {
+    this.signalingManager.on('offer-received', async ({ peerId, offer }) => {
+      let peerConnection = this.peers.get(peerId);
+      if (!peerConnection || !peerConnection.webrtc) {
+        // Create peer connection if it doesn't exist (for incoming connections)
+        if (!peerConnection) {
+          if (this.config.debug) {
+            console.log(`Creating peer connection for incoming offer from ${peerId}`);
+          }
+          
+          const webrtc = this.createWebRTCInstance(peerId);
+          
+          const newPeerConnection = new PeerConnection(peerId, webrtc, this.config);
+          const messageQueue = new MessageQueue(this.config.messageQueue);
+          this.messageQueues.set(peerId, messageQueue);
+          this.peers.set(peerId, newPeerConnection);
+          
+          this.setupPeerEvents(newPeerConnection);
+          await webrtc.connect();
+          
+          peerConnection = newPeerConnection;
+        }
+      }
+
+      try {
+        if (peerConnection.webrtc) {
+          await peerConnection.webrtc.setRemoteDescription(offer);
+          const answer = await peerConnection.webrtc.createAnswer(offer);
+          await this.signalingManager.createAnswer(peerId, answer);
+          
+          this.sendSignalingMessage('answer', peerId, answer);
+        }
+      } catch (error) {
+        console.error(`Error handling offer from ${peerId}:`, error);
+      }
     });
 
-    // Handle peer join/leave events
-    this.signalingServer.on('peer-joined', (peerInfo) => {
+    this.signalingManager.on('answer-received', async ({ peerId, answer }) => {
+      const peerConnection = this.peers.get(peerId);
+      if (!peerConnection || !peerConnection.webrtc) return;
+
+      try {
+        await peerConnection.webrtc.setRemoteDescription(answer);
+      } catch (error) {
+        console.error(`Error handling answer from ${peerId}:`, error);
+      }
+    });
+
+    this.signalingManager.on('ice-candidate-received', async ({ peerId, candidate }) => {
+      const peerConnection = this.peers.get(peerId);
+      if (!peerConnection || !peerConnection.webrtc) return;
+
+      try {
+        await peerConnection.webrtc.addIceCandidate(candidate);
+      } catch (error) {
+        console.error(`Error adding ICE candidate from ${peerId}:`, error);
+      }
+    });
+  }
+
+  private setupSignalingAdapterEvents(): void {
+    if (!this.signalingAdapter) return;
+
+    this.signalingAdapter.on('peer-joined', (peerInfo) => {
       if (peerInfo.roomId === this.config.roomId && peerInfo.id !== this.localPeerId) {
         this.emit('peer-joined', peerInfo);
+        
+        // Register with main signaling server
+        if (this.config.useMainSignalingServer) {
+          this.signalingAdapter?.registerWebRTCPeer(this.localPeerId, this.config.roomId!, {
+            capabilities: this.getCapabilities()
+          });
+        }
         
         // Auto-connect if enabled
         if (this.config.autoConnect && this.peers.size < this.config.maxPeers!) {
@@ -386,7 +547,44 @@ export class MultiPeerManager extends EventEmitter {
       }
     });
 
-    this.signalingServer.on('peer-left', (peerInfo) => {
+    this.signalingAdapter.on('peer-left', (peerInfo) => {
+      if (peerInfo.id !== this.localPeerId) {
+        this.disconnectFromPeer(peerInfo.id);
+        this.emit('peer-left', peerInfo);
+      }
+    });
+
+    this.signalingAdapter.on('webrtc-message', (message) => {
+      this.handleSignalingMessage(message);
+    });
+
+    this.signalingAdapter.on('legacy-message', ({ socket, message }) => {
+      // Handle legacy messages through adapter
+      if (this.config.debug) {
+        console.log('Processing legacy message through adapter:', message);
+      }
+    });
+  }
+
+  private setupSignalingHandlers(): void {
+    this.signalingServer.on(`message:${this.localPeerId}`, (message) => {
+      this.handleSignalingMessage(message);
+    });
+
+    this.signalingServer.on('peer-joined', (peerInfo: any) => {
+      if (peerInfo.roomId === this.config.roomId && peerInfo.id !== this.localPeerId) {
+        this.emit('peer-joined', peerInfo);
+        
+        // Auto-connect if enabled (but avoid duplicate connections)
+        if (this.config.autoConnect && !this.peers.has(peerInfo.id) && this.peers.size < this.config.maxPeers!) {
+          this.connectToPeer(peerInfo.id).catch(error => {
+            console.warn(`Auto-connect to peer ${peerInfo.id} failed:`, error);
+          });
+        }
+      }
+    });
+
+    this.signalingServer.on('peer-left', (peerInfo: any) => {
       if (peerInfo.id !== this.localPeerId) {
         this.disconnectFromPeer(peerInfo.id);
         this.emit('peer-left', peerInfo);
@@ -394,276 +592,124 @@ export class MultiPeerManager extends EventEmitter {
     });
   }
 
-  private setupPeerHandlers(peerConnection: PeerConnection): void {
-    const { webrtc, peerId } = peerConnection;
-
-    if (!webrtc) return;
-
-    // Handle WebRTC events
-    webrtc.on('connect', () => {
-      peerConnection.connected = true;
-      peerConnection.lastActivity = Date.now();
-      
-      // Process queued messages
-      this.processQueuedMessages(peerConnection);
-      
+  private setupPeerEvents(peerConnection: PeerConnection): void {
+    peerConnection.on('connected', () => {
       if (this.config.debug) {
-        console.log(`Connected to peer: ${peerId}`);
+        console.log(`Peer connected: ${peerConnection.peerId}`);
       }
-      
-      this.emit('peer-connected', peerId);
+      this.emit('peer-connected', peerConnection.peerId);
     });
 
-    webrtc.on('disconnect', () => {
-      peerConnection.connected = false;
-      
+    peerConnection.on('disconnected', () => {
       if (this.config.debug) {
-        console.log(`Disconnected from peer: ${peerId}`);
+        console.log(`Peer disconnected: ${peerConnection.peerId}`);
       }
-      
-      this.emit('peer-disconnected', peerId);
+      this.emit('peer-disconnected', peerConnection.peerId);
     });
 
-    webrtc.on('error', (error: Error) => {
-      console.error(`WebRTC error for peer ${peerId}:`, error);
-      this.emit('peer-error', { peerId, error });
-    });
-
-    webrtc.on('iceCandidate', (candidate: RTCIceCandidateInit) => {
-      // Send ICE candidate to peer
-      this.signalingServer.sendMessage({
-        type: 'ice-candidate',
-        from: this.localPeerId,
-        to: peerId,
-        payload: candidate
-      });
-    });
-
-    webrtc.on('dataChannel', (channel: RTCDataChannel) => {
-      peerConnection.dataChannels.set(channel.label, channel);
-      this.setupDataChannelHandlers(peerConnection, channel);
-      
-      this.emit('data-channel-received', { peerId, channel });
-    });
-  }
-
-  private setupDataChannelHandlers(peerConnection: PeerConnection, channel: RTCDataChannel): void {
-    channel.onopen = () => {
-      peerConnection.lastActivity = Date.now();
-      
-      // Process queued messages for this channel
-      this.processQueuedMessagesForChannel(peerConnection, channel.label);
-      
+    peerConnection.on('error', (error) => {
       if (this.config.debug) {
-        console.log(`Data channel ${channel.label} opened for peer ${peerConnection.peerId}`);
+        console.log(`Peer error: ${peerConnection.peerId}`, error);
       }
-      
-      this.emit('data-channel-open', { peerId: peerConnection.peerId, label: channel.label });
-    };
+      this.emit('peer-error', { peerId: peerConnection.peerId, error });
+    });
 
-    channel.onmessage = (event: MessageEvent) => {
-      peerConnection.lastActivity = Date.now();
-      
+    peerConnection.on('ice-candidate', (candidate) => {
+      if (this.config.debug) {
+        console.log(`ICE candidate from ${peerConnection.peerId}:`, candidate);
+      }
+      this.sendSignalingMessage('ice-candidate', peerConnection.peerId, candidate);
+    });
+
+    peerConnection.on('message', ({ data, channel }) => {
+      if (this.config.debug) {
+        console.log(`Message from ${peerConnection.peerId} via ${channel}:`, data);
+      }
       this.emit('message', {
         from: peerConnection.peerId,
-        data: event.data,
-        channel: channel.label
+        data,
+        channel
       });
-    };
+    });
 
-    channel.onerror = (error: Event) => {
-      console.error(`Data channel error for peer ${peerConnection.peerId}:`, error);
-      this.emit('data-channel-error', { peerId: peerConnection.peerId, label: channel.label, error });
-    };
-
-    channel.onclose = () => {
-      peerConnection.dataChannels.delete(channel.label);
-      
+    peerConnection.on('data-channel-open', ({ label }) => {
       if (this.config.debug) {
-        console.log(`Data channel ${channel.label} closed for peer ${peerConnection.peerId}`);
+        console.log(`Data channel opened: ${label} for ${peerConnection.peerId}`);
       }
       
-      this.emit('data-channel-close', { peerId: peerConnection.peerId, label: channel.label });
-    };
+      // Process queued messages when data channel opens
+      const messageQueue = this.messageQueues.get(peerConnection.peerId);
+      if (messageQueue) {
+        messageQueue.process(async (queuedMsg) => {
+          const channel = peerConnection.dataChannels.get(queuedMsg.channelLabel);
+          if (channel && channel.readyState === 'open') {
+            try {
+              channel.send(queuedMsg.data);
+              if (this.config.debug) {
+                console.log(`Sent queued message to ${peerConnection.peerId}:`, queuedMsg.data);
+              }
+            } catch (error) {
+              console.warn(`Failed to send queued message to ${peerConnection.peerId}:`, error);
+            }
+          }
+          return false; // Don't retry, just remove from queue
+        });
+      }
+    });
   }
 
-  private async initiateConnection(peerConnection: PeerConnection): Promise<void> {
-    if (!peerConnection.webrtc) return;
+  private async initiateConnection(peerId: string): Promise<void> {
+    const peerConnection = this.peers.get(peerId);
+    if (!peerConnection?.webrtc) return;
 
     try {
-      // Create offer
       const offer = await peerConnection.webrtc.createOffer();
+      await this.signalingManager.createOffer(peerId, offer);
       
-      // Send offer to peer
-      this.signalingServer.sendMessage({
-        type: 'offer',
-        from: this.localPeerId,
-        to: peerConnection.peerId,
-        payload: offer
-      });
+      this.sendSignalingMessage('offer', peerId, offer);
     } catch (error) {
-      console.error(`Failed to initiate connection with peer ${peerConnection.peerId}:`, error);
+      console.error(`Failed to initiate connection with ${peerId}:`, error);
       throw error;
     }
   }
 
-  private async handleSignalingMessage(message: SignalingMessage): Promise<void> {
-    const peerConnection = this.peers.get(message.from);
-    if (!peerConnection) {
-      // Ignore messages from unknown peers
-      return;
-    }
-
-    if (!peerConnection.webrtc) {
-      // Ignore messages for peers without WebRTC connections
-      return;
-    }
-
+  private async handleSignalingMessage(message: any): Promise<void> {
     try {
+      if (this.config.debug) {
+        console.log(`Handling signaling message:`, message);
+      }
+      
       switch (message.type) {
         case 'offer':
-          await this.handleOffer(peerConnection, message.payload);
+          await this.signalingManager.handleOffer(message.from, message.payload);
           break;
         case 'answer':
-          await this.handleAnswer(peerConnection, message.payload);
+          await this.signalingManager.handleAnswer(message.from, message.payload);
           break;
         case 'ice-candidate':
-          await this.handleIceCandidate(peerConnection, message.payload);
+          await this.signalingManager.handleIceCandidate(message.from, message.payload);
           break;
-        default:
-          if (this.config.debug) {
-            console.log(`Unhandled signaling message type: ${message.type}`);
-          }
       }
     } catch (error) {
-      console.error(`Error handling signaling message from ${message.from}:`, error);
+      console.error(`Error handling signaling message:`, error);
     }
   }
 
-  private async handleOffer(peerConnection: PeerConnection, offer: RTCSessionDescriptionInit): Promise<void> {
-    if (!peerConnection.webrtc) return;
-
-    // Set remote description
-    await peerConnection.webrtc.setRemoteDescription(offer);
-    
-    // Create answer
-    const answer = await peerConnection.webrtc.createAnswer(offer);
-    
-    // Send answer back
-    this.signalingServer.sendMessage({
-      type: 'answer',
+  private sendSignalingMessage(type: 'offer' | 'answer' | 'ice-candidate', to: string, payload: any): void {
+    const message = {
+      type,
       from: this.localPeerId,
-      to: peerConnection.peerId,
-      payload: answer
-    });
-  }
-
-  private async handleAnswer(peerConnection: PeerConnection, answer: RTCSessionDescriptionInit): Promise<void> {
-    if (!peerConnection.webrtc) return;
-
-    await peerConnection.webrtc.setRemoteDescription(answer);
-  }
-
-  private async handleIceCandidate(peerConnection: PeerConnection, candidate: RTCIceCandidateInit): Promise<void> {
-    if (!peerConnection.webrtc) return;
-
-    await peerConnection.webrtc.addIceCandidate(candidate);
-  }
-
-  private queueMessage(peerConnection: PeerConnection, data: string | ArrayBuffer | ArrayBufferView, channelLabel: string): void {
-    const queuedMessage: QueuedMessage = {
-      data,
-      timestamp: Date.now(),
-      channelLabel,
-      retryCount: 0,
-      maxRetries: 5
+      to,
+      payload
     };
 
-    // Add to queue (at the end)
-    peerConnection.messageQueue.push(queuedMessage);
-
-    // Limit queue size
-    if (peerConnection.messageQueue.length > this.config.messageQueueSize!) {
-      peerConnection.messageQueue.shift(); // Remove oldest message
+    // Use signaling adapter if available (main signaling server integration)
+    if (this.signalingAdapter) {
+      this.signalingAdapter.sendSignalingMessage(message);
+    } else {
+      // Fallback to local signaling server
+      this.signalingServer.sendMessage(message);
     }
-
-    if (this.config.debug) {
-      console.log(`Message queued for peer ${peerConnection.peerId}, channel ${channelLabel}`);
-    }
-  }
-
-  private processQueuedMessages(peerConnection: PeerConnection): void {
-    if (!peerConnection.connected || peerConnection.messageQueue.length === 0) {
-      return;
-    }
-
-    // Process messages in order
-    const remainingMessages: QueuedMessage[] = [];
-    
-    peerConnection.messageQueue.forEach(queuedMessage => {
-      const channel = peerConnection.dataChannels.get(queuedMessage.channelLabel);
-      
-      if (channel && channel.readyState === RTCDataChannelState.OPEN) {
-        try {
-          channel.send(queuedMessage.data);
-          
-          if (this.config.debug) {
-            console.log(`Queued message sent to ${peerConnection.peerId} via channel ${queuedMessage.channelLabel}`);
-          }
-        } catch (error) {
-          // Retry or discard
-          if (queuedMessage.retryCount < queuedMessage.maxRetries) {
-            queuedMessage.retryCount++;
-            remainingMessages.push(queuedMessage);
-          } else {
-            console.warn(`Discarding queued message for ${peerConnection.peerId} after ${queuedMessage.maxRetries} retries`);
-          }
-        }
-      } else {
-        // Channel not ready, keep in queue
-        remainingMessages.push(queuedMessage);
-      }
-    });
-
-    // Update queue
-    peerConnection.messageQueue = remainingMessages;
-  }
-
-  private processQueuedMessagesForChannel(peerConnection: PeerConnection, channelLabel: string): void {
-    if (!peerConnection.connected) return;
-
-    // Process messages for this specific channel
-    const remainingMessages: QueuedMessage[] = [];
-    
-    peerConnection.messageQueue.forEach(queuedMessage => {
-      if (queuedMessage.channelLabel === channelLabel) {
-        const channel = peerConnection.dataChannels.get(channelLabel);
-        
-        if (channel && channel.readyState === RTCDataChannelState.OPEN) {
-          try {
-            channel.send(queuedMessage.data);
-            
-            if (this.config.debug) {
-              console.log(`Queued message sent to ${peerConnection.peerId} via channel ${channelLabel}`);
-            }
-          } catch (error) {
-            // Retry
-            if (queuedMessage.retryCount < queuedMessage.maxRetries) {
-              queuedMessage.retryCount++;
-              remainingMessages.push(queuedMessage);
-            }
-          }
-        } else {
-          remainingMessages.push(queuedMessage);
-        }
-      } else {
-        // Different channel, keep in queue
-        remainingMessages.push(queuedMessage);
-      }
-    });
-
-    // Update queue
-    peerConnection.messageQueue = remainingMessages;
   }
 
   private startHeartbeat(): void {
@@ -672,14 +718,21 @@ export class MultiPeerManager extends EventEmitter {
     }
 
     this.heartbeatTimer = setInterval(() => {
-      const now = Date.now();
       const timeout = this.config.connectionTimeout!;
       
       this.peers.forEach((peerConnection, peerId) => {
-        // Check for inactive peers
-        if (now - peerConnection.lastActivity > timeout && !peerConnection.connected) {
-          console.warn(`Peer ${peerId} connection timeout, disconnecting`);
-          this.disconnectFromPeer(peerId);
+        // Check if peerConnection exists and has isTimedOut method
+        if (peerConnection && typeof peerConnection.isTimedOut === 'function') {
+          try {
+            if (peerConnection.isTimedOut(timeout)) {
+              console.warn(`Peer ${peerId} connection timeout, disconnecting`);
+              this.disconnectFromPeer(peerId);
+            }
+          } catch (error) {
+            console.error(`Error checking timeout for peer ${peerId}:`, error);
+            // Remove problematic peer connection
+            this.disconnectFromPeer(peerId);
+          }
         }
       });
     }, this.config.heartbeatInterval);
@@ -697,7 +750,8 @@ export class MultiPeerManager extends EventEmitter {
       'data-channels',
       'message-queuing',
       'multi-peer',
-      'auto-reconnect'
+      'auto-reconnect',
+      'signaling-v2'
     ];
   }
 }
