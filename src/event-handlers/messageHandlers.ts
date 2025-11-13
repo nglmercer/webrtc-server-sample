@@ -83,27 +83,61 @@ function joinARoom(
     });
   }
 }
-function relayMessage(socket: CustomSocket, message:any, listOfUsers: { [key: string]: User }) {
+function relayMessage(socket: CustomSocket, message: any, listOfUsers: { [key: string]: User }) {
     const remoteUserId = message.remoteUserId;
-    const remoteUser = listOfUsers[remoteUserId];
-
-    // 1. Verificación de seguridad: ¿Existe el destinatario?
-    if (!remoteUser) {
-        console.warn(`[Server] Intento de enviar mensaje a un usuario no encontrado: ${remoteUserId}`);
-        socket.emit("user-not-found", remoteUserId); // Notificar al remitente si se desea
+    
+    // ✅ VALIDACIÓN MEJORADA DE remoteUserId
+    if (!remoteUserId || typeof remoteUserId !== 'string') {
+        console.warn(`[Server] remoteUserId inválido:`, { remoteUserId, message });
+        socket.emit("error", { type: "invalid-remote-userid", message: "remoteUserId inválido" });
+        return;
+    }
+    
+    // ✅ EVITAR AUTO-ENVÍO
+    if (remoteUserId === socket.userid) {
+        console.warn(`[Server] Intento de auto-envío bloqueado para usuario: ${socket.userid}`);
         return;
     }
 
-    // 2. Adjuntar información extra del remitente si es necesario.
-    // El frontend no lo usa para señales WebRTC, pero es una buena práctica mantenerlo.
+    const remoteUser = listOfUsers[remoteUserId];
+    
+    // ✅ VERIFICACIÓN DE SEGURIDAD MEJORADA
+    if (!remoteUser) {
+        console.warn(`[Server] Usuario ${remoteUserId} no encontrado. Usuarios disponibles:`, Object.keys(listOfUsers));
+        socket.emit("user-not-found", { 
+            userId: remoteUserId, 
+            availableUsers: Object.keys(listOfUsers),
+            timestamp: Date.now()
+        });
+        return;
+    }
+
+    // ✅ VERIFICAR ESTADO DE CONEXIÓN DEL DESTINATARIO
+    if (!remoteUser.socket) {
+        console.warn(`[Server] Usuario ${remoteUserId} no tiene socket válido`);
+        socket.emit("user-disconnected", remoteUserId);
+        return;
+    }
+
+    // ✅ ADJUNTAR INFORMACIÓN DEL REMITENTE
     if (listOfUsers[socket.userid]) {
-        message.extra = listOfUsers[socket.userid].extra;
+        message.senderInfo = {
+            userid: socket.userid,
+            extra: listOfUsers[socket.userid].extra,
+            timestamp: Date.now()
+        };
     }
     
-    // 3. ¡La entrega! Reenviar el mensaje completo al socket del destinatario.
-    // El destinatario recibirá exactamente el mismo objeto 'message' que envió el remitente.
-    console.log(`[Server] Retransmitiendo mensaje de ${socket.userid} a ${remoteUserId}`);
-    remoteUser.socket.emit(listOfUsers[remoteUserId].socketMessageEvent, message);
+    // ✅ ENTREGA DEL MENSAJE CON MEJOR LOGGING
+    const messageEvent = remoteUser.socketMessageEvent || "RTCMultiConnection-Message";
+    console.log(`[Server] Retransmitiendo mensaje de ${socket.userid} a ${remoteUserId} [evento: ${messageEvent}]`);
+    
+    try {
+        remoteUser.socket.emit(messageEvent, message);
+    } catch (error) {
+        console.error(`[Server] Error al enviar mensaje a ${remoteUserId}:`, error);
+        socket.emit("error", { type: "message-delivery-failed", target: remoteUserId });
+    }
 }
 
 function handleWebRTCMessage(socket: CustomSocket, message: any, listOfUsers: { [key: string]: User }, signalingAdapter?: SignalingAdapter) {
@@ -162,6 +196,66 @@ function handleWebRTCSystemMessage(socket: CustomSocket, message: any, listOfUse
             console.warn(`[WebRTC] Unknown system message type: ${type}`);
     }
 }
+// ✅ FUNCIÓN DE LIMPIEZA DE RECURSOS
+function cleanupDisconnectedUsers(listOfUsers: { [key: string]: User }) {
+    const disconnectedUsers: string[] = [];
+    
+    Object.entries(listOfUsers).forEach(([userId, user]) => {
+        if (!user.socket) {
+            disconnectedUsers.push(userId);
+        }
+    });
+    
+    disconnectedUsers.forEach(userId => {
+        console.log(`[Server] Limpiando usuario desconectado: ${userId}`);
+        delete listOfUsers[userId];
+    });
+    
+    return disconnectedUsers.length;
+}
+
+// ✅ FUNCIÓN DE ESTADÍSTICAS DEL SERVIDOR
+function getServerStats(rooms: { [key: string]: Room }, listOfUsers: { [key: string]: User }) {
+    return {
+        timestamp: Date.now(),
+        rooms: {
+            total: Object.keys(rooms).length,
+            list: Object.keys(rooms).map(roomId => ({
+                id: roomId,
+                participants: rooms[roomId]?.participants?.length || 0,
+                owner: rooms[roomId]?.owner
+            }))
+        },
+        users: {
+            total: Object.keys(listOfUsers).length,
+            connected: Object.values(listOfUsers).filter(u => u.socket).length
+        }
+    };
+}
+
+// ✅ FUNCIÓN MEJORADA PARA MANEJO DE ROOMS VS USERS
+function handleRoomVsUserRouting(socket: CustomSocket, message: any, rooms: { [key: string]: Room }, listOfUsers: { [key: string]: User }, socketMessageEvent: string) {
+    if (message.remoteUserId && message.remoteUserId !== "system") {
+        // Verificar si es un roomId o userId
+        const isRoomId = rooms[message.remoteUserId] !== undefined;
+        
+        if (isRoomId) {
+            console.log(`[Server] Mensaje dirigido a room ${message.remoteUserId}, reenviando a participantes`);
+            const room = rooms[message.remoteUserId];
+            
+            room.participants.forEach(participantId => {
+                if (participantId !== socket.userid && listOfUsers[participantId]) {
+                    const participantMessage = { ...message, remoteUserId: participantId };
+                    relayMessage(socket, participantMessage, listOfUsers);
+                }
+            });
+        } else {
+            // Es un userId directo
+            relayMessage(socket, message, listOfUsers);
+        }
+    }
+}
+
 export function registerMessageHandlers(
   socket: CustomSocket,
   rooms: { [key: string]: Room },
@@ -178,21 +272,50 @@ export function registerMessageHandlers(
 
   socket.on(socketMessageEvent, (message: any, callback: (isPresent: boolean, userid: string) => void) => {
     try {
-      if (message.remoteUserId === socket.userid) return;
-      message.sender = socket.userid;
-      if (message.remoteUserId && message.remoteUserId !== "system") {
-          relayMessage(socket, message, listOfUsers);
+      // ✅ VALIDACIONES INICIALES
+      if (!message) {
+        console.warn(`[Server] Mensaje vacío recibido de ${socket.userid}`);
+        return;
       }
-      if (message.remoteUserId && message.remoteUserId !== "system" && message.message.newParticipationRequest) {
-        if (rooms[message.remoteUserId]) {
+      
+      if (message.remoteUserId === socket.userid) {
+        console.warn(`[Server] Intento de auto-envío bloqueado para ${socket.userid}`);
+        return;
+      }
+      
+      // ✅ ASIGNAR SENDER SIEMPRE
+      message.sender = socket.userid;
+      message.senderTimestamp = Date.now();
+      
+      // ✅ MANEJO DE PARTICIPATION REQUEST (ROOMS)
+      if (message.remoteUserId && message.remoteUserId !== "system" && message.message?.newParticipationRequest) {
+        const targetRoomId = message.remoteUserId;
+        
+        if (rooms[targetRoomId]) {
+          console.log(`[Server] Procesando participation request para room ${targetRoomId}`);
           joinARoom(socket, message, rooms, listOfUsers, socketMessageEvent);
+          return;
+        } else {
+          console.warn(`[Server] Room ${targetRoomId} no encontrada para participation request`);
+          socket.emit("room-not-found", { roomId: targetRoomId });
           return;
         }
       }
+      
+      // ✅ MANEJO DE MENSAJES DIRECTOS (USUARIOS)
+      handleRoomVsUserRouting(socket, message, rooms, listOfUsers, socketMessageEvent);
 
-      if (message.remoteUserId === "system" && message.message.detectPresence) {
-        if (message.message.userid === socket.userid) return callback(false, socket.userid);
-        return callback(!!listOfUsers[message.message.userid], message.message.userid);
+      // ✅ MANEJO DE MENSAJES DE SISTEMA
+      if (message.remoteUserId === "system") {
+        if (message.message?.detectPresence) {
+          const targetUserId = message.message.userid;
+          if (message.message.userid === socket.userid) {
+            if (callback) callback(false, socket.userid);
+            return;
+          }
+          const userExists = !!listOfUsers[targetUserId];
+          if (callback) callback(userExists, targetUserId);
+        }
       }
 
       if (!listOfUsers[message.sender]) {
@@ -208,6 +331,7 @@ export function registerMessageHandlers(
 
       onMessageCallback(socket, message, listOfUsers, socketMessageEvent, config);
     } catch (e) {
+      console.error(`[Server] Error en socketMessageEvent:`, e);
       pushLogs(config, "on-socketMessageEvent", e);
     }
   });
@@ -231,3 +355,14 @@ export function registerMessageHandlers(
     });
   });
 }
+
+// ✅ EXPORTAR PARA USO EXTERNO
+export {
+    relayMessage,
+    joinARoom,
+    handleWebRTCMessage,
+    handleWebRTCSystemMessage,
+    cleanupDisconnectedUsers,
+    getServerStats,
+    handleRoomVsUserRouting
+};

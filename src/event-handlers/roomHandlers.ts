@@ -141,24 +141,44 @@ export function registerRoomHandlers(
       roomid: string,
       callback: (isPresent: boolean, roomid: string, extra: any) => void,
     ) => {
+      // ✅ VALIDACIÓN MEJORADA
+      if (!roomid || typeof roomid !== 'string') {
+        console.error(`[Server] check-presence: roomid inválido`, { roomid, socketId: socket.id });
+        if (callback) callback(false, roomid || "invalid", { error: "roomid inválido" });
+        return;
+      }
+
       const room = listOfRooms[roomid];
-      console.log("check-presence", { roomid, room, listOfRooms });
+      const roomCount = Object.keys(listOfRooms).length;
+      const userCount = Object.keys(listOfUsers).length;
+      
+      console.log(`[Server] check-presence: ${socket.userid} verificando room "${roomid}" (${roomCount} rooms, ${userCount} users)`);
+      console.log(`[Server] check-presence details:`, { 
+        roomid, 
+        roomExists: !!room,
+        roomParticipants: room?.participants || [],
+        allRooms: Object.keys(listOfRooms) 
+      });
 
       if (!room || !room.participants.length) {
-        socket.emit("presence-checked", false, roomid, {
-          _room: { isFull: false, isPasswordProtected: false },
-        });
-        return callback(false, roomid, {
-          _room: { isFull: false, isPasswordProtected: false },
-        });
+        console.log(`[Server] check-presence: Room "${roomid}" no existe o está vacía`);
+        const response = { _room: { isFull: false, isPasswordProtected: false } };
+        socket.emit("presence-checked", false, roomid, response);
+        if (callback) callback(false, roomid, response);
+        return;
       }
+      
       const extra = room.extra || {};
       extra._room = {
         isFull: room.participants.length >= room.maxParticipantsAllowed,
         isPasswordProtected: !!room.password,
+        participantCount: room.participants.length,
+        owner: room.owner
       };
+      
+      console.log(`[Server] check-presence: Room "${roomid}" existe con ${room.participants.length} participantes`);
       socket.emit("presence-checked", true, roomid, extra);
-      callback(true, roomid, extra);
+      if (callback) callback(true, roomid, extra);
     },
   );
 

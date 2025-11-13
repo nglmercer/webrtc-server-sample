@@ -58,53 +58,86 @@ export class SignalingServer {
    */
   public handleConnection(socket: ISocket | SocketIOLikeSocket): ISocket {
     const customSocket = socket as CustomSocket;
-
     let params = customSocket.handshake.query as any;
 
-    // Función para generar un ID único que no esté en uso
+    // ✅ VALIDACIÓN INICIAL DEL SOCKET
+    if (!customSocket.handshake) {
+      console.error(`[Server] Socket sin handshake válido`);
+      socket.disconnect();
+      return customSocket;
+    }
+
     const generateUniqueUserId = (): string => {
       let newId: string;
+      let attempts = 0;
+      const maxAttempts = 100;
+      
       do {
         newId = nanoid();
-      } while (this.listOfUsers[newId]);
+        attempts++;
+      } while (this.listOfUsers[newId] && attempts < maxAttempts);
+      
+      if (attempts >= maxAttempts) {
+        throw new Error('No se pudo generar un ID único después de múltiples intentos');
+      }
+      
       return newId;
     };
 
-    // --- Inicialización y validación de parámetros ---
-    if (!params.userid) {
+    // INICIALIZACIÓN Y VALIDACIÓN MEJORADA DE PARÁMETROS
+    console.log(`[Server] Nueva conexión:`, { 
+      socketId: customSocket.id, 
+      query: params,
+      userAgent: (customSocket.handshake as any)?.headers?.['user-agent']
+    });
+
+    if (!params.userid || typeof params.userid !== 'string' || params.userid.trim().length === 0) {
+      const oldUserId = params.userid;
       params.userid = generateUniqueUserId();
+      console.log(`[Server] userid inválido "${oldUserId}", generado nuevo: ${params.userid}`);
     }
-    if (!params.sessionid) {
+
+    if (!params.sessionid || typeof params.sessionid !== 'string') {
       params.sessionid = nanoid();
+      console.log(`[Server] sessionid inválido, generado nuevo: ${params.sessionid}`);
     }
+
+    // VALIDACIÓN DE EXTRA
     if (params.extra) {
       try {
-        params.extra = JSON.parse(params.extra as string);
+        if (typeof params.extra === 'string') {
+          params.extra = JSON.parse(params.extra);
+        } else if (typeof params.extra !== 'object') {
+          params.extra = {};
+        }
       } catch (e) {
+        console.warn(`[Server] Error parseando extra:`, e);
         params.extra = {};
       }
     } else {
       params.extra = {};
     }
 
-    const socketMessageEvent =
-      (params.msgEvent as string) || "RTCMultiConnection-Message";
-    (params as any).socketMessageEvent = socketMessageEvent;
-
-    const autoCloseEntireSession = params.autoCloseEntireSession === "true";
-
-    // --- Verificación de usuario existente ---
+    // ✅ VERIFICACIÓN DE USUARIO EXISTENTE MEJORADA
     if (!!this.listOfUsers[params.userid]) {
       const useridAlreadyTaken = params.userid;
+      const existingUser = this.listOfUsers[params.userid];
+      
+      console.warn(`[Server] userid "${useridAlreadyTaken}" ya tomado por socket ${existingUser.socket?.id}`);
+      
       params.userid = generateUniqueUserId();
-      customSocket.emit(
-        "userid-already-taken",
-        useridAlreadyTaken,
-        params.userid,
-      );
-      // No continuamos la conexión con el ID antiguo. El cliente debe reintentar con el nuevo.
-      return customSocket;
+      
+      customSocket.emit("userid-already-taken", {
+        oldUserId: useridAlreadyTaken,
+        newUserId: params.userid,
+        reason: "userid_already_exists"
+      });
     }
+
+    // ✅ CONFIGURACIÓN DEL SOCKET
+    const socketMessageEvent = (params.msgEvent as string) || "RTCMultiConnection-Message";
+    (params as any).socketMessageEvent = socketMessageEvent;
+    const autoCloseEntireSession = params.autoCloseEntireSession === "true";
 
     // --- Configuración del usuario y registro de eventos ---
     customSocket.userid = params.userid;
