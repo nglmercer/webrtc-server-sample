@@ -19,11 +19,11 @@ import type {
   RTCOfferOptions,
   RTCAnswerOptions,
   MediaStream,
-} from './types';
+} from './types.js';
 import {
   RTCSdpType,
   RTCDataChannelState,
-} from './types';
+} from './types.js';
 
 // Try to import simple-peer
 let SimplePeer: any;
@@ -91,7 +91,7 @@ export class SimplePeerWebRTC extends EventEmitter implements WebRTCProvider {
           iceServers: finalConfig.iceServers || [],
         },
         // This will fail in Bun:
-        wrtc: require('wrtc'), // This line causes the failure in Bun
+        wrtc: require('wrtc'), // This line causes failure in Bun
       });
 
       this.setupPeerEvents();
@@ -227,7 +227,7 @@ export class SimplePeerWebRTC extends EventEmitter implements WebRTCProvider {
       throw new Error('Cannot create answer when initiator');
     }
 
-    // Signal the offer to the peer
+    // Signal the offer to peer
     this.peer.signal(offer);
 
     // Wait for the answer

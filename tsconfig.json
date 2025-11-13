@@ -15,7 +15,9 @@
     "sourceMap": true,
     "allowImportingTsExtensions": false,
     "noEmit": false,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": false,
+    "allowJs": true,
+    "checkJs": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules","examples"]

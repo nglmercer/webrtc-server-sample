@@ -18,12 +18,12 @@ import type {
   RTCOfferOptions,
   RTCAnswerOptions,
   MediaStream,
-} from './types';
+} from './types.js';
 import {
   RTCSdpType,
   RTCDataChannelState,
-} from './types';
-import { getLogger, createPrefixedLogger, type Logger } from './logger';
+} from './types.js';
+import { getLogger, createPrefixedLogger, type Logger } from './logger.js';
 
 // Extend WebRTCConfig to include useRealWebRTC
 interface ExtendedWebRTCConfig extends WebRTCConfig {

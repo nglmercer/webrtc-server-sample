@@ -11,9 +11,7 @@ import { EnhancedWebRTC } from './enhanced-webrtc.js';
 import { NodeDataChannelWebRTCReal } from './node-datachannel-real.js';
 import type { WebRTCProvider, WebRTCConfig, RTCConfiguration } from './types.js';
 
-export { NodeDataChannelWebRTC, SimplePeerWebRTC };
-export { EnhancedWebRTC } from './enhanced-webrtc';
-export { NodeDataChannelWebRTCReal } from './node-datachannel-real';
+export { NodeDataChannelWebRTC, SimplePeerWebRTC, EnhancedWebRTC, NodeDataChannelWebRTCReal };
 export type { WebRTCProvider, WebRTCConfig, RTCConfiguration } from './types.js';
 
 /**
@@ -112,5 +110,5 @@ export function getAvailableProviders(): Array<'node-datachannel' | 'simple-peer
 }
 
 // Export: main classes directly for convenience
-export { NodeDataChannelWebRTC as WebRTC } from './node-datachannel';
-export { NodeDataChannelWebRTCReal as WebRTCReal } from './node-datachannel-real';
+export { NodeDataChannelWebRTC as WebRTC } from './node-datachannel.js';
+export { NodeDataChannelWebRTCReal as WebRTCReal } from './node-datachannel-real.js';

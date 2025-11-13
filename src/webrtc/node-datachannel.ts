@@ -18,12 +18,12 @@ import type {
   RTCOfferOptions,
   RTCAnswerOptions,
   MediaStream,
-} from './types';
+} from './types.js';
 import {
   RTCSdpType,
   RTCDataChannelState,
-} from './types';
-import { getLogger, createPrefixedLogger, type Logger } from './logger';
+} from './types.js';
+import { getLogger, createPrefixedLogger, type Logger } from './logger.js';
 
 // Try to import node-datachannel
 let nodeDataChannel: any;
@@ -349,7 +349,7 @@ export class NodeDataChannelWebRTC extends EventEmitter implements WebRTCProvide
         }
       }
 
-      // Wait for node-datachannel to generate the answer
+      // Wait for node-datachannel to generate answer
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('Answer creation timeout'));

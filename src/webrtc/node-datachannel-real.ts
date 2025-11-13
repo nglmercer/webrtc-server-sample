@@ -18,12 +18,12 @@ import type {
   RTCOfferOptions,
   RTCAnswerOptions,
   MediaStream,
-} from './types';
+} from './types.js';
 import {
   RTCSdpType,
   RTCDataChannelState,
-} from './types';
-import { getLogger, createPrefixedLogger, type Logger } from './logger';
+} from './types.js';
+import { getLogger, createPrefixedLogger, type Logger } from './logger.js';
 
 // Try to import node-datachannel
 let nodeDataChannel: any;
@@ -237,7 +237,7 @@ export class NodeDataChannelWebRTCReal extends EventEmitter implements WebRTCPro
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('REAL Offer creation timeout'));
-        }, 10000);
+        },10000);
 
         // Set up listener for REAL local description
         const originalHandler = this.peerConnection.onLocalDescription;
@@ -317,7 +317,7 @@ export class NodeDataChannelWebRTCReal extends EventEmitter implements WebRTCPro
       return new Promise((resolve, reject) => {
         const timeout = setTimeout(() => {
           reject(new Error('REAL Answer creation timeout'));
-        }, 10000);
+        },10000);
 
         // Set up listener for REAL local description
         const originalHandler = this.peerConnection.onLocalDescription;
